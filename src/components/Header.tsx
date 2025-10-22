@@ -123,7 +123,7 @@ export default function Header() {
                       My Products
                     </Link>
                     <Link
-                      href="/products/new"
+                      href="/product/new"
                       className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100"
                       onClick={() => setShowUserMenu(false)}
                     >

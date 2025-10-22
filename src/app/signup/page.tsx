@@ -1,22 +1,19 @@
 'use client';
 
 // src/app/signup/page.tsx
-// Signup page with OTP verification
+// Signup page without OTP verification
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
-import { Loader2, ShieldCheck } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export default function SignupPage() {
   const router = useRouter();
   const { setUser } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [sendingOTP, setSendingOTP] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [countdown, setCountdown] = useState(0);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -24,73 +21,22 @@ export default function SignupPage() {
     phone: '',
     password: '',
     confirmPassword: '',
-    otp: '',
     city: '',
     state: '',
     pincode: '',
   });
 
-  const handleSendOTP = async () => {
-    // Validate phone
-    if (!formData.phone) {
-      toast.error('Please enter phone number');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Validation
+    if (!formData.name || !formData.email || !formData.phone || !formData.password || !formData.city || !formData.state || !formData.pincode) {
+      toast.error('All fields are required');
       return;
     }
 
     if (!/^[0-9]{10}$/.test(formData.phone)) {
       toast.error('Please enter valid 10-digit phone number');
-      return;
-    }
-
-    setSendingOTP(true);
-
-    try {
-      const res = await fetch('/api/auth/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ phone: formData.phone }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        toast.success('OTP sent to your phone!');
-        setOtpSent(true);
-        startCountdown();
-      } else {
-        toast.error(data.error || 'Failed to send OTP');
-      }
-    } catch (error) {
-      toast.error('Something went wrong');
-    } finally {
-      setSendingOTP(false);
-    }
-  };
-
-  const startCountdown = () => {
-    setCountdown(60);
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validation
-    if (!otpSent) {
-      toast.error('Please verify your phone number first');
-      return;
-    }
-
-    if (!formData.otp) {
-      toast.error('Please enter OTP');
       return;
     }
 
@@ -101,6 +47,11 @@ export default function SignupPage() {
 
     if (formData.password.length < 6) {
       toast.error('Password must be at least 6 characters');
+      return;
+    }
+
+    if (!/^[0-9]{6}$/.test(formData.pincode)) {
+      toast.error('Please enter valid 6-digit pincode');
       return;
     }
 
@@ -167,66 +118,19 @@ export default function SignupPage() {
             />
           </div>
 
-          {/* Phone with OTP */}
+          {/* Phone */}
           <div>
-            <label className="block text-sm font-medium mb-1">
-              Phone Number * {otpSent && <span className="text-green-600 text-xs">(Verified ✓)</span>}
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                required
-                pattern="[0-9]{10}"
-                disabled={otpSent}
-                className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
-                placeholder="10-digit mobile number"
-              />
-              <button
-                type="button"
-                onClick={handleSendOTP}
-                disabled={sendingOTP || otpSent || countdown > 0}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap flex items-center gap-2"
-              >
-                {sendingOTP ? (
-                  <>
-                    <Loader2 className="animate-spin" size={16} />
-                    Sending...
-                  </>
-                ) : countdown > 0 ? (
-                  `Resend (${countdown}s)`
-                ) : otpSent ? (
-                  <>
-                    <ShieldCheck size={16} />
-                    Verified
-                  </>
-                ) : (
-                  'Send OTP'
-                )}
-              </button>
-            </div>
+            <label className="block text-sm font-medium mb-1">Phone Number *</label>
+            <input
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              required
+              pattern="[0-9]{10}"
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="10-digit mobile number"
+            />
           </div>
-
-          {/* OTP Input */}
-          {otpSent && (
-            <div>
-              <label className="block text-sm font-medium mb-1">Enter OTP *</label>
-              <input
-                type="text"
-                value={formData.otp}
-                onChange={(e) => setFormData({ ...formData, otp: e.target.value })}
-                required
-                maxLength={6}
-                pattern="[0-9]{6}"
-                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter 6-digit OTP"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                OTP sent to {formData.phone}. Valid for 5 minutes.
-              </p>
-            </div>
-          )}
 
           {/* Password */}
           <div>
@@ -297,7 +201,7 @@ export default function SignupPage() {
 
           <button
             type="submit"
-            disabled={loading || !otpSent}
+            disabled={loading}
             className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (

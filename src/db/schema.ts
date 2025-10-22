@@ -1,10 +1,8 @@
-// src/db/schema.ts
-// Database schema using Drizzle ORM for MySQL
+// src/db/schema.ts - Fixed column name mapping
 
 import { mysqlTable, varchar, text, float, int, boolean, datetime, mysqlEnum, index } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
 
-// Users table
 export const users = mysqlTable('users', {
   id: varchar('id', { length: 255 }).primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
@@ -18,7 +16,7 @@ export const users = mysqlTable('users', {
   longitude: float('longitude'),
   isVerified: boolean('is_verified').default(false),
   
-  // Subscription fields
+  // Subscription fields - CRITICAL: use exact column names from DB
   subscriptionStatus: mysqlEnum('subscription_status', ['INACTIVE', 'ACTIVE', 'PAST_DUE', 'CANCELLED']).default('INACTIVE'),
   subscriptionId: varchar('subscription_id', { length: 255 }),
   subscriptionStartDate: datetime('subscription_start_date'),
@@ -38,7 +36,6 @@ export const users = mysqlTable('users', {
   subscriptionStatusIdx: index('subscription_status_idx').on(table.subscriptionStatus),
 }));
 
-// Categories table
 export const categories = mysqlTable('categories', {
   id: varchar('id', { length: 255 }).primaryKey(),
   name: varchar('name', { length: 255 }).notNull().unique(),
@@ -50,31 +47,22 @@ export const categories = mysqlTable('categories', {
   parentIdIdx: index('parent_id_idx').on(table.parentId),
 }));
 
-// Products table
 export const products = mysqlTable('products', {
   id: varchar('id', { length: 255 }).primaryKey(),
   title: varchar('title', { length: 500 }).notNull(),
   description: text('description').notNull(),
   price: float('price').notNull(),
-  images: text('images').notNull(), // JSON string array
-  
+  images: text('images').notNull(),
   categoryId: varchar('category_id', { length: 255 }).notNull(),
   userId: varchar('user_id', { length: 255 }).notNull(),
-  
-  // Location
   city: varchar('city', { length: 100 }).notNull(),
   state: varchar('state', { length: 100 }).notNull(),
   pincode: varchar('pincode', { length: 10 }).notNull(),
   latitude: float('latitude').notNull(),
   longitude: float('longitude').notNull(),
-  
-  // Status
   status: mysqlEnum('status', ['ACTIVE', 'SOLD', 'HIDDEN', 'ARCHIVED']).default('ACTIVE'),
-  
-  // Analytics
   views: int('views').default(0),
   phoneClicks: int('phone_clicks').default(0),
-  
   createdAt: datetime('created_at').notNull().default(new Date()),
   updatedAt: datetime('updated_at').notNull().default(new Date()),
 }, (table) => ({
@@ -85,7 +73,6 @@ export const products = mysqlTable('products', {
   locationIdx: index('location_idx').on(table.latitude, table.longitude),
 }));
 
-// Transactions table
 export const transactions = mysqlTable('transactions', {
   id: varchar('id', { length: 255 }).primaryKey(),
   userId: varchar('user_id', { length: 255 }).notNull(),
@@ -93,17 +80,12 @@ export const transactions = mysqlTable('transactions', {
   amount: float('amount').notNull(),
   currency: varchar('currency', { length: 10 }).default('INR'),
   status: mysqlEnum('status', ['PENDING', 'SUCCESS', 'FAILED', 'REFUNDED']).notNull(),
-  
-  // Razorpay details
   razorpayPaymentId: varchar('razorpay_payment_id', { length: 255 }),
   razorpayOrderId: varchar('razorpay_order_id', { length: 255 }),
   razorpaySubscriptionId: varchar('razorpay_subscription_id', { length: 255 }),
   razorpaySignature: varchar('razorpay_signature', { length: 255 }),
-  
-  // Billing period
   billingPeriodStart: datetime('billing_period_start'),
   billingPeriodEnd: datetime('billing_period_end'),
-  
   createdAt: datetime('created_at').notNull().default(new Date()),
 }, (table) => ({
   userIdIdx: index('user_id_idx').on(table.userId),
@@ -111,19 +93,9 @@ export const transactions = mysqlTable('transactions', {
   createdAtIdx: index('created_at_idx').on(table.createdAt),
 }));
 
-// Relations
 export const usersRelations = relations(users, ({ many }) => ({
   products: many(products),
   transactions: many(transactions),
-}));
-
-export const categoriesRelations = relations(categories, ({ many, one }) => ({
-  products: many(products),
-  parent: one(categories, {
-    fields: [categories.parentId],
-    references: [categories.id],
-  }),
-  subCategories: many(categories),
 }));
 
 export const productsRelations = relations(products, ({ one }) => ({

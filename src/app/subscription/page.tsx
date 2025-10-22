@@ -128,7 +128,7 @@ export default function SubscriptionPage() {
       if (res.ok) {
         toast.success('Subscription activated! 🎉');
         // Update user context
-        window.location.href = '/products/new'; // Redirect to create product
+        window.location.href = '/product/new'; // Redirect to create product
       } else {
         toast.error(data.error || 'Payment verification failed');
       }
@@ -160,7 +160,7 @@ export default function SubscriptionPage() {
             Your subscription is active. Start listing your products now.
           </p>
           <button
-            onClick={() => router.push('/products/new')}
+            onClick={() => router.push('/product/new')}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
           >
             List a Product

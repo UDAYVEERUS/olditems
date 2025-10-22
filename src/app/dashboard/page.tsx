@@ -136,7 +136,7 @@ export default function DashboardPage() {
           <p className="text-gray-600 mt-1">Manage your listings and subscription</p>
         </div>
         <button
-          onClick={() => router.push('/products/new')}
+          onClick={() => router.push('/product/new')}
           className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
         >
           <Plus size={20} />
@@ -284,7 +284,7 @@ export default function DashboardPage() {
               : `No ${activeTab} products`}
           </p>
           <button
-            onClick={() => router.push('/products/new')}
+            onClick={() => router.push('/product/new')}
             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-flex items-center gap-2"
           >
             <Plus size={20} />
