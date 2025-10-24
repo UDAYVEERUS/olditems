@@ -1,11 +1,15 @@
 // drizzle.config.ts
-import type { Config } from 'drizzle-kit';
+import { defineConfig } from 'drizzle-kit';
 
-export default {
+export default defineConfig({
   schema: './src/db/schema.ts',
   out: './drizzle',
-  driver: 'mysql2',
+  dialect: 'mysql',  // ← Change from 'mysql2' to 'mysql'
   dbCredentials: {
-    uri: process.env.DATABASE_URL!,
+    host: process.env.DB_HOST!,
+    port: parseInt(process.env.DB_PORT!),
+    user: process.env.DB_USER!,
+    password: process.env.DB_PASSWORD!,
+    database: process.env.DB_NAME!,
   },
-} satisfies Config;
+});

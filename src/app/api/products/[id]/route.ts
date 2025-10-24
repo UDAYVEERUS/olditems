@@ -10,9 +10,10 @@ import { eq, and } from 'drizzle-orm';
 // Update product
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
@@ -25,7 +26,6 @@ export async function PUT(
     const body = await request.json();
     const { title, description, price, categoryId, images, city, state, pincode, latitude, longitude } = body;
 
-    // Validation
     if (!title || !description || !price || !categoryId || !city || !state || !pincode) {
       return NextResponse.json(
         { error: 'All fields are required' },
@@ -47,13 +47,12 @@ export async function PUT(
       );
     }
 
-    // Verify product belongs to user
     const [product] = await db
       .select()
       .from(products)
       .where(
         and(
-          eq(products.id, params.id),
+          eq(products.id, id),
           eq(products.userId, currentUser.userId)
         )
       )
@@ -66,7 +65,6 @@ export async function PUT(
       );
     }
 
-    // Update product
     await db
       .update(products)
       .set({
@@ -81,7 +79,7 @@ export async function PUT(
         latitude: latitude || 0,
         longitude: longitude || 0,
       })
-      .where(eq(products.id, params.id));
+      .where(eq(products.id, id));
 
     return NextResponse.json({
       success: true,
@@ -99,9 +97,10 @@ export async function PUT(
 // Delete product
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
@@ -111,13 +110,12 @@ export async function DELETE(
       );
     }
 
-    // Verify product belongs to user
     const [product] = await db
       .select()
       .from(products)
       .where(
         and(
-          eq(products.id, params.id),
+          eq(products.id, id),
           eq(products.userId, currentUser.userId)
         )
       )
@@ -130,10 +128,9 @@ export async function DELETE(
       );
     }
 
-    // Delete product
     await db
       .delete(products)
-      .where(eq(products.id, params.id));
+      .where(eq(products.id, id));
 
     return NextResponse.json({
       success: true,

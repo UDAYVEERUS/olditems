@@ -8,16 +8,17 @@ import { eq, sql } from 'drizzle-orm';
 
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }:{ params: Promise<{ id: string }> }
 ) {
   try {
     // Increment phone clicks counter
+    const { id } = await params;
     await db
       .update(products)
       .set({
         phoneClicks: sql`${products.phoneClicks} + 1`,
       })
-      .where(eq(products.id, params.id));
+      .where(eq(products.id,id));
 
     return NextResponse.json({ success: true });
   } catch (error) {

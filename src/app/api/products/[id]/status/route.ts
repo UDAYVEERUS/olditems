@@ -9,9 +9,10 @@ import { eq, and } from 'drizzle-orm';
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
@@ -37,7 +38,7 @@ export async function PATCH(
       .from(products)
       .where(
         and(
-          eq(products.id, params.id),
+          eq(products.id, id),
           eq(products.userId, currentUser.userId)
         )
       )
@@ -54,7 +55,7 @@ export async function PATCH(
     await db
       .update(products)
       .set({ status })
-      .where(eq(products.id, params.id));
+      .where(eq(products.id, id));
 
     return NextResponse.json({
       success: true,

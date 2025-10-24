@@ -9,9 +9,10 @@ import { eq, and } from 'drizzle-orm';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
@@ -39,7 +40,7 @@ export async function GET(
       .from(products)
       .where(
         and(
-          eq(products.id, params.id),
+          eq(products.id, id),
           eq(products.userId, currentUser.userId)
         )
       )

@@ -8,10 +8,11 @@ import { eq } from 'drizzle-orm';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     // Get product with user and category data
+    const { id } = await params;
     const [product] = await db
       .select({
         id: products.id,
@@ -41,7 +42,7 @@ export async function GET(
       .from(products)
       .leftJoin(users, eq(products.userId, users.id))
       .leftJoin(categories, eq(products.categoryId, categories.id))
-      .where(eq(products.id, params.id))
+      .where(eq(products.id, id))
       .limit(1);
 
     if (!product) {
