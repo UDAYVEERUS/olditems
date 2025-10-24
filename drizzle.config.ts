@@ -4,7 +4,7 @@ import { defineConfig } from 'drizzle-kit';
 export default defineConfig({
   schema: './src/db/schema.ts',
   out: './drizzle',
-  dialect: 'mysql',  // ← Change from 'mysql2' to 'mysql'
+  dialect: 'mysql', 
   dbCredentials: {
     host: process.env.DB_HOST!,
     port: parseInt(process.env.DB_PORT!),
