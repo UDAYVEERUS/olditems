@@ -8,6 +8,9 @@ import { eq, or, sql } from 'drizzle-orm';
 
 export async function POST(request: Request) {
   try {
+    console.log('DB_HOST:', process.env.DB_HOST);
+    console.log('DB_PORT:', process.env.DB_PORT);
+
     const body = await request.json();
     const { name, email, phone, password, city, state, pincode, latitude, longitude } = body;
 
