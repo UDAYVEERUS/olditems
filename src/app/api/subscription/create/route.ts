@@ -1,15 +1,9 @@
-// src/app/api/subscription/create/route.ts
-// Create Razorpay subscription for user
-
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { users } from '@/db/schema';
 import { getCurrentUser } from '@/lib/auth';
-import { createSubscription } from '@/lib/razorpay';
+import { createSubscription } from '@/lib/cashfree';
 import { eq } from 'drizzle-orm';
-
-// Razorpay Plan ID (create this in Razorpay dashboard first)
-const RAZORPAY_PLAN_ID = process.env.RAZORPAY_PLAN_ID || 'plan_XXXXXXXXXXXX';
 
 export async function POST() {
   try {
@@ -49,19 +43,28 @@ export async function POST() {
       );
     }
 
-    // Create Razorpay subscription
-    const subscription = await createSubscription(RAZORPAY_PLAN_ID);
+    // Generate unique order ID
+    const orderId = `order_${Date.now()}_${user.id}`;
+
+    // Create Cashfree payment order
+    const subscription = await createSubscription({
+      customerId: user.id,
+      email: user.email,
+      phone: user.phone || '9999999999',
+      amount: 10,
+      orderId,
+      customerName: user.name,
+    });
 
     return NextResponse.json({
       success: true,
-      subscriptionId: subscription.id,
-      // Return these for Razorpay checkout
-      razorpayKeyId: process.env.RAZORPAY_KEY_ID,
-      amount: 10, // ₹10
+      orderId: subscription.orderId,
+      paymentLink: subscription.paymentLink,
+      sessionId: subscription.sessionId,
+      amount: 10,
       currency: 'INR',
       userName: user.name,
       userEmail: user.email,
-      userPhone: user.phone,
     });
   } catch (error) {
     console.error('Create subscription error:', error);

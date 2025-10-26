@@ -1,6 +1,3 @@
-// src/app/api/subscription/check/route.ts
-// Check if user has active subscription (must pay ₹10 on first listing)
-
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { users } from '@/db/schema';

@@ -1,11 +1,8 @@
-// src/app/api/subscription/verify/route.ts
-// Verify payment and activate subscription
-
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { users, transactions } from '@/db/schema';
 import { getCurrentUser } from '@/lib/auth';
-import { verifyPaymentSignature } from '@/lib/razorpay';
+import { verifyPayment } from '@/lib/cashfree';
 import { eq } from 'drizzle-orm';
 
 export async function POST(request: Request) {
@@ -20,29 +17,22 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const {
-      razorpay_payment_id,
-      razorpay_subscription_id,
-      razorpay_signature,
-    } = body;
+    const { orderId } = body;
 
-    if (!razorpay_payment_id || !razorpay_subscription_id || !razorpay_signature) {
+    if (!orderId) {
       return NextResponse.json(
-        { error: 'Missing payment details' },
+        { error: 'Missing orderId' },
         { status: 400 }
       );
     }
 
-    // Verify signature
-    const isValid = verifyPaymentSignature(
-      razorpay_subscription_id,
-      razorpay_payment_id,
-      razorpay_signature
-    );
+    // Verify payment with Cashfree API
+    const paymentData = await verifyPayment(orderId);
 
-    if (!isValid) {
+    // Check if payment is successful
+    if (paymentData.order_status !== 'PAID') {
       return NextResponse.json(
-        { error: 'Invalid payment signature' },
+        { error: 'Payment not completed' },
         { status: 400 }
       );
     }
@@ -64,16 +54,15 @@ export async function POST(request: Request) {
     // Calculate subscription dates
     const now = new Date();
     const subscriptionEndDate = new Date(now);
-    subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1); // +30 days
-
+    subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
     const nextBillingDate = new Date(subscriptionEndDate);
 
-    // Update user subscription status
+    // Update user subscription
     await db
       .update(users)
       .set({
         subscriptionStatus: 'ACTIVE',
-        subscriptionId: razorpay_subscription_id,
+        subscriptionId: orderId,
         subscriptionStartDate: now,
         subscriptionEndDate,
         nextBillingDate,
@@ -89,17 +78,12 @@ export async function POST(request: Request) {
       amount: 10,
       currency: 'INR',
       status: 'SUCCESS',
-      razorpayPaymentId: razorpay_payment_id,
-      razorpaySubscriptionId: razorpay_subscription_id,
-      razorpaySignature: razorpay_signature,
+      cashfreeOrderId: orderId, // Changed from razorpay
+      cashfreeTransactionId: paymentData.cf_payment_id,
+      cashfreePaymentStatus: 'SUCCESS',
       billingPeriodStart: now,
       billingPeriodEnd: subscriptionEndDate,
     });
-
-    // Send payment receipt email (don't wait)
-    // Import at top: import { sendPaymentReceiptEmail } from '@/lib/resend';
-    // sendPaymentReceiptEmail(user.email, user.name, 10, razorpay_payment_id, now)
-    //   .catch(err => console.error('Receipt email error:', err));
 
     return NextResponse.json({
       success: true,

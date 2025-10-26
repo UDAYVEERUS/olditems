@@ -1,11 +1,8 @@
-// src/app/api/subscription/cancel/route.ts
-// Cancel user subscription
-
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { users, products } from '@/db/schema';
 import { getCurrentUser } from '@/lib/auth';
-import { cancelSubscription } from '@/lib/razorpay';
+import { refundPayment } from '@/lib/cashfree';
 import { eq } from 'drizzle-orm';
 
 export async function POST() {
@@ -40,8 +37,12 @@ export async function POST() {
       );
     }
 
-    // Cancel subscription on Razorpay
-    await cancelSubscription(user.subscriptionId);
+    // Refund the subscription fee
+    await refundPayment(
+      user.subscriptionId,
+      10,
+      'User cancelled subscription'
+    );
 
     // Update user status
     await db

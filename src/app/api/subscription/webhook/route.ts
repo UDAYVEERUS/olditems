@@ -1,16 +1,13 @@
-// src/app/api/subscription/webhook/route.ts
-// Handle Razorpay webhooks for auto-renewal
-
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { users, transactions, products } from '@/db/schema';
-import { verifyWebhookSignature } from '@/lib/razorpay';
+import { verifyWebhookSignature } from '@/lib/cashfree';
 import { eq } from 'drizzle-orm';
 
 export async function POST(request: Request) {
   try {
     const body = await request.text();
-    const signature = request.headers.get('x-razorpay-signature');
+    const signature = request.headers.get('x-webhook-signature');
 
     if (!signature) {
       return NextResponse.json(
@@ -19,52 +16,51 @@ export async function POST(request: Request) {
       );
     }
 
-    // Verify webhook signature
-    const isValid = verifyWebhookSignature(
-      body,
-      signature,
-      process.env.RAZORPAY_WEBHOOK_SECRET!
-    );
+    // Parse the webhook body
+    const event = JSON.parse(body);
+    const orderData = event.data?.order;
+    const paymentData = event.data?.payment;
 
-    if (!isValid) {
+    if (!orderData) {
       return NextResponse.json(
-        { error: 'Invalid signature' },
+        { error: 'Invalid webhook data' },
         { status: 400 }
       );
     }
 
-    const event = JSON.parse(body);
-    const payload = event.payload.subscription.entity || event.payload.payment.entity;
+    // ============ FIXED: Proper signature verification ============
+    const isValid = verifyWebhookSignature(
+      orderData.order_id,
+      orderData.order_amount,
+      orderData.order_currency,
+      signature,
+      process.env.CASHFREE_WEBHOOK_SECRET!
+    );
+
+    if (!isValid) {
+      console.error('Invalid webhook signature for order:', orderData.order_id);
+      return NextResponse.json(
+        { error: 'Invalid signature' },
+        { status: 401 }
+      );
+    }
 
     // Handle different webhook events
-    switch (event.event) {
-      case 'subscription.charged':
-        await handleSubscriptionCharged(payload);
+    switch (event.type) {
+      case 'PAYMENT_SUCCESS':
+        await handlePaymentSuccess(orderData, paymentData);
         break;
 
-      case 'subscription.cancelled':
-        await handleSubscriptionCancelled(payload);
+      case 'PAYMENT_FAILED':
+        await handlePaymentFailed(orderData, paymentData);
         break;
 
-      case 'subscription.paused':
-        await handleSubscriptionPaused(payload);
-        break;
-
-      case 'subscription.resumed':
-        await handleSubscriptionResumed(payload);
-        break;
-
-      case 'subscription.completed':
-        await handleSubscriptionCompleted(payload);
-        break;
-
-      case 'subscription.authenticated':
-        // First payment successful
-        await handleSubscriptionAuthenticated(payload);
+      case 'PAYMENT_USER_DROPPED':
+        console.log('User dropped payment for order:', orderData.order_id);
         break;
 
       default:
-        console.log('Unhandled webhook event:', event.event);
+        console.log('Unhandled webhook event type:', event.type);
     }
 
     return NextResponse.json({ received: true });
@@ -77,158 +73,94 @@ export async function POST(request: Request) {
   }
 }
 
-// Handle successful subscription charge (renewal)
-async function handleSubscriptionCharged(payload: any) {
-  const subscriptionId = payload.id;
+// Handle successful payment
+async function handlePaymentSuccess(orderData: any, paymentData: any) {
+  const orderId = orderData.order_id;
 
-  // Find user with this subscription
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.subscriptionId, subscriptionId))
-    .limit(1);
+  try {
+    // Find user with this subscription ID
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.subscriptionId, orderId))
+      .limit(1);
 
-  if (!user) {
-    console.error('User not found for subscription:', subscriptionId);
-    return;
+    if (!user) {
+      console.error('User not found for order:', orderId);
+      return;
+    }
+
+    const now = new Date();
+    const subscriptionEndDate = new Date(now);
+    subscriptionEndDate.setMonth(subscriptionEndDate.getMonth() + 1);
+    const nextBillingDate = new Date(subscriptionEndDate);
+
+    // Update subscription status
+    await db
+      .update(users)
+      .set({
+        subscriptionStatus: 'ACTIVE',
+        subscriptionEndDate,
+        nextBillingDate,
+      })
+      .where(eq(users.id, user.id));
+
+    // Create transaction record
+    const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    await db.insert(transactions).values({
+      id: transactionId,
+      userId: user.id,
+      type: 'SUBSCRIPTION_RENEWAL',
+      amount: orderData.order_amount,
+      currency: orderData.order_currency,
+      status: 'SUCCESS',
+      cashfreeOrderId: orderId,
+      cashfreeTransactionId: paymentData?.cf_payment_id,
+      cashfreePaymentStatus: 'SUCCESS',
+      billingPeriodStart: now,
+      billingPeriodEnd: subscriptionEndDate,
+    });
+
+    console.log('✅ Payment successful for user:', user.id, 'Order:', orderId);
+  } catch (error) {
+    console.error('Error processing successful payment:', error);
   }
-
-  // Calculate next billing date
-  const now = new Date();
-  const nextBillingDate = new Date(now);
-  nextBillingDate.setMonth(nextBillingDate.getMonth() + 1);
-
-  const subscriptionEndDate = new Date(nextBillingDate);
-
-  // Update subscription
-  await db
-    .update(users)
-    .set({
-      subscriptionStatus: 'ACTIVE',
-      subscriptionEndDate,
-      nextBillingDate,
-    })
-    .where(eq(users.id, user.id));
-
-  // Create transaction record
-  const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-  await db.insert(transactions).values({
-    id: transactionId,
-    userId: user.id,
-    type: 'SUBSCRIPTION_RENEWAL',
-    amount: 10,
-    currency: 'INR',
-    status: 'SUCCESS',
-    razorpaySubscriptionId: subscriptionId,
-    billingPeriodStart: now,
-    billingPeriodEnd: subscriptionEndDate,
-  });
-
-  console.log('Subscription renewed for user:', user.id);
 }
 
-// Handle subscription cancellation
-async function handleSubscriptionCancelled(payload: any) {
-  const subscriptionId = payload.id;
+// Handle failed payment
+async function handlePaymentFailed(orderData: any, paymentData: any) {
+  const orderId = orderData.order_id;
 
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.subscriptionId, subscriptionId))
-    .limit(1);
+  try {
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.subscriptionId, orderId))
+      .limit(1);
 
-  if (!user) return;
+    if (!user) {
+      console.error('User not found for failed order:', orderId);
+      return;
+    }
 
-  // Update subscription status
-  await db
-    .update(users)
-    .set({
-      subscriptionStatus: 'CANCELLED',
-    })
-    .where(eq(users.id, user.id));
+    // Create failed transaction record
+    const transactionId = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    await db.insert(transactions).values({
+      id: transactionId,
+      userId: user.id,
+      type: 'SUBSCRIPTION_PAYMENT',
+      amount: orderData.order_amount,
+      currency: orderData.order_currency,
+      status: 'FAILED',
+      cashfreeOrderId: orderId,
+      cashfreeTransactionId: paymentData?.cf_payment_id,
+      cashfreePaymentStatus: 'FAILED',
+      billingPeriodStart: new Date(),
+      billingPeriodEnd: new Date(),
+    });
 
-  // Hide all user's products
-  await db
-    .update(products)
-    .set({ status: 'HIDDEN' })
-    .where(eq(products.userId, user.id));
-
-  console.log('Subscription cancelled for user:', user.id);
-}
-
-// Handle subscription pause
-async function handleSubscriptionPaused(payload: any) {
-  const subscriptionId = payload.id;
-
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.subscriptionId, subscriptionId))
-    .limit(1);
-
-  if (!user) return;
-
-  await db
-    .update(users)
-    .set({
-      subscriptionStatus: 'PAST_DUE',
-    })
-    .where(eq(users.id, user.id));
-
-  console.log('Subscription paused for user:', user.id);
-}
-
-// Handle subscription resume
-async function handleSubscriptionResumed(payload: any) {
-  const subscriptionId = payload.id;
-
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.subscriptionId, subscriptionId))
-    .limit(1);
-
-  if (!user) return;
-
-  await db
-    .update(users)
-    .set({
-      subscriptionStatus: 'ACTIVE',
-    })
-    .where(eq(users.id, user.id));
-
-  // Unhide all user's products
-  await db
-    .update(products)
-    .set({ status: 'ACTIVE' })
-    .where(eq(products.userId, user.id));
-
-  console.log('Subscription resumed for user:', user.id);
-}
-
-// Handle subscription completion
-async function handleSubscriptionCompleted(payload: any) {
-  const subscriptionId = payload.id;
-
-  const [user] = await db
-    .select()
-    .from(users)
-    .where(eq(users.subscriptionId, subscriptionId))
-    .limit(1);
-
-  if (!user) return;
-
-  await db
-    .update(users)
-    .set({
-      subscriptionStatus: 'CANCELLED',
-    })
-    .where(eq(users.id, user.id));
-
-  console.log('Subscription completed for user:', user.id);
-}
-
-// Handle first authentication
-async function handleSubscriptionAuthenticated(payload: any) {
-  console.log('Subscription authenticated:', payload.id);
+    console.log('❌ Payment failed for user:', user.id, 'Order:', orderId);
+  } catch (error) {
+    console.error('Error processing failed payment:', error);
+  }
 }

@@ -1,19 +1,13 @@
 'use client';
 
 // src/app/subscription/page.tsx
-// Subscription payment page with Razorpay integration
+// Subscription payment page with Cashfree integration (UPDATED)
 import React from 'react';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 import { Loader2, Check, CreditCard } from 'lucide-react';
-
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
 
 export default function SubscriptionPage() {
   const router = useRouter();
@@ -29,7 +23,6 @@ export default function SubscriptionPage() {
     }
 
     checkSubscriptionStatus();
-    loadRazorpayScript();
   }, [user]);
 
   const checkSubscriptionStatus = async () => {
@@ -44,14 +37,7 @@ export default function SubscriptionPage() {
     }
   };
 
-  const loadRazorpayScript = () => {
-    // Load Razorpay script
-    const script = document.createElement('script');
-    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-    script.async = true;
-    document.body.appendChild(script);
-  };
-
+  // ============ CHANGED: Cashfree payment instead of Razorpay ============
   const handleSubscribe = async () => {
     if (!user) {
       toast.error('Please login first');
@@ -62,7 +48,7 @@ export default function SubscriptionPage() {
     setLoading(true);
 
     try {
-      // Create subscription
+      // Create subscription order
       const res = await fetch('/api/subscription/create', {
         method: 'POST',
       });
@@ -75,67 +61,16 @@ export default function SubscriptionPage() {
         return;
       }
 
-      // Open Razorpay checkout
-      const options = {
-        key: data.razorpayKeyId,
-        subscription_id: data.subscriptionId,
-        name: 'Marketplace',
-        description: 'Monthly Subscription - ₹10/month',
-        image: '/logo.png', // Add your logo
-        prefill: {
-          name: data.userName,
-          email: data.userEmail,
-          contact: data.userPhone,
-        },
-        theme: {
-          color: '#2563eb', // Blue color
-        },
-        handler: async function (response: any) {
-          // Payment successful, verify on backend
-          await verifyPayment(response);
-        },
-        modal: {
-          ondismiss: function () {
-            setLoading(false);
-            toast.error('Payment cancelled');
-          },
-        },
-      };
-
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+      // ✅ Redirect to Cashfree payment link
+      if (data.paymentLink) {
+        window.location.href = data.paymentLink; // Cashfree handles checkout
+      } else {
+        toast.error('Payment link not generated');
+        setLoading(false);
+      }
     } catch (error) {
       console.error('Subscribe error:', error);
       toast.error('Something went wrong');
-      setLoading(false);
-    }
-  };
-
-  const verifyPayment = async (paymentData: any) => {
-    try {
-      const res = await fetch('/api/subscription/verify', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          razorpay_payment_id: paymentData.razorpay_payment_id,
-          razorpay_subscription_id: paymentData.razorpay_subscription_id,
-          razorpay_signature: paymentData.razorpay_signature,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        toast.success('Subscription activated! 🎉');
-        // Update user context
-        window.location.href = '/product/new'; // Redirect to create product
-      } else {
-        toast.error(data.error || 'Payment verification failed');
-      }
-    } catch (error) {
-      console.error('Verify payment error:', error);
-      toast.error('Payment verification failed');
-    } finally {
       setLoading(false);
     }
   };
@@ -230,9 +165,9 @@ export default function SubscriptionPage() {
           )}
         </button>
 
-        {/* Info */}
+        {/* Info - ✅ CHANGED: Updated to Cashfree */}
         <div className="mt-6 text-center text-sm text-gray-600">
-          <p>Secure payment powered by Razorpay</p>
+          <p>Secure payment powered by Cashfree</p>
           <p className="mt-2">
             By subscribing, you agree to auto-renewal. Cancel anytime from your dashboard.
           </p>

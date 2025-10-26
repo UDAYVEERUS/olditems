@@ -1,4 +1,4 @@
-// src/db/schema.ts - Fixed column name mapping
+// src/db/schema.ts - Drizzle Schema with Cashfree
 
 import { mysqlTable, varchar, text, float, int, boolean, datetime, mysqlEnum, index } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
@@ -16,7 +16,7 @@ export const users = mysqlTable('users', {
   longitude: float('longitude'),
   isVerified: boolean('is_verified').default(false),
   
-  // Subscription fields - CRITICAL: use exact column names from DB
+  // Subscription fields
   subscriptionStatus: mysqlEnum('subscription_status', ['INACTIVE', 'ACTIVE', 'PAST_DUE', 'CANCELLED']).default('INACTIVE'),
   subscriptionId: varchar('subscription_id', { length: 255 }),
   subscriptionStartDate: datetime('subscription_start_date'),
@@ -80,10 +80,12 @@ export const transactions = mysqlTable('transactions', {
   amount: float('amount').notNull(),
   currency: varchar('currency', { length: 10 }).default('INR'),
   status: mysqlEnum('status', ['PENDING', 'SUCCESS', 'FAILED', 'REFUNDED']).notNull(),
-  razorpayPaymentId: varchar('razorpay_payment_id', { length: 255 }),
-  razorpayOrderId: varchar('razorpay_order_id', { length: 255 }),
-  razorpaySubscriptionId: varchar('razorpay_subscription_id', { length: 255 }),
-  razorpaySignature: varchar('razorpay_signature', { length: 255 }),
+  
+  // ============ CASHFREE FIELDS (CHANGED FROM RAZORPAY) ============
+  cashfreeOrderId: varchar('cashfree_order_id', { length: 255 }),
+  cashfreeTransactionId: varchar('cashfree_transaction_id', { length: 255 }),
+  cashfreePaymentStatus: varchar('cashfree_payment_status', { length: 50 }),
+  
   billingPeriodStart: datetime('billing_period_start'),
   billingPeriodEnd: datetime('billing_period_end'),
   createdAt: datetime('created_at').notNull().default(new Date()),
@@ -91,6 +93,7 @@ export const transactions = mysqlTable('transactions', {
   userIdIdx: index('user_id_idx').on(table.userId),
   statusIdx: index('status_idx').on(table.status),
   createdAtIdx: index('created_at_idx').on(table.createdAt),
+  cashfreeOrderIdIdx: index('cashfree_order_id_idx').on(table.cashfreeOrderId),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
