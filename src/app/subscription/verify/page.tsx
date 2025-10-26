@@ -1,13 +1,14 @@
 'use client';
 
-// src/app/subscription/verify/page.tsx (NEW FILE)
+// src/app/subscription/verify/page.tsx (FIXED)
 // Cashfree redirects here after payment
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-export default function VerifyPage() {
+// Separate component that uses useSearchParams
+function VerifyContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'success' | 'failed'>('loading');
@@ -15,7 +16,7 @@ export default function VerifyPage() {
 
   useEffect(() => {
     verifyPayment();
-  }, []);
+  }, [searchParams]);
 
   const verifyPayment = async () => {
     try {
@@ -23,9 +24,11 @@ export default function VerifyPage() {
       // Cashfree redirects with order_id parameter
       const orderId = searchParams.get('order_id');
 
+      console.log('Order ID from URL:', orderId);
+
       if (!orderId) {
         setStatus('failed');
-        setMessage('Order ID not found');
+        setMessage('Order ID not found. Please try again.');
         return;
       }
 
@@ -37,6 +40,8 @@ export default function VerifyPage() {
       });
 
       const data = await res.json();
+
+      console.log('Verification response:', data);
 
       if (res.ok && data.success) {
         setStatus('success');
@@ -53,7 +58,7 @@ export default function VerifyPage() {
     } catch (error) {
       console.error('Verify payment error:', error);
       setStatus('failed');
-      setMessage('Payment verification failed');
+      setMessage('Payment verification failed. Please contact support.');
     }
   };
 
@@ -95,5 +100,26 @@ export default function VerifyPage() {
         </button>
       </div>
     </div>
+  );
+}
+
+// Loading component for Suspense
+function VerifyLoading() {
+  return (
+    <div className="flex justify-center items-center min-h-[60vh]">
+      <div className="text-center">
+        <Loader2 className="animate-spin text-blue-600 mx-auto mb-4" size={48} />
+        <p className="text-gray-600">Verifying payment...</p>
+      </div>
+    </div>
+  );
+}
+
+// Main component wrapped with Suspense
+export default function VerifyPage() {
+  return (
+    <Suspense fallback={<VerifyLoading />}>
+      <VerifyContent />
+    </Suspense>
   );
 }
