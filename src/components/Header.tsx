@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import { useSearch } from '@/context/SearchContext';
-import { Search, User, LogOut, Package, Plus } from 'lucide-react';
+import { Search, User, LogOut, Package, Plus, Hamburger, MenuIcon } from 'lucide-react';
 
 interface Category {
   id: string;
@@ -68,9 +68,9 @@ export default function Header() {
             <select
               value={selectedCategory || 'all'}
               onChange={(e) => handleCategoryChange(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3  hidden sm:block py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="all">All Categories</option>
+              <option value="all">Categories</option>
               {categories.map((cat) => (
                 <optgroup key={cat.id} label={cat.name}>
                   <option value={cat.id}>{cat.name}</option>
@@ -88,7 +88,7 @@ export default function Header() {
                 type="text"
                 value={localSearch}
                 onChange={(e) => setLocalSearch(e.target.value)}
-                placeholder="Search products..."
+                placeholder="Search.."
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
               <button
@@ -108,7 +108,7 @@ export default function Header() {
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 >
-                  <User size={20} />
+                  <MenuIcon size={20} />
                   <span className="hidden md:inline">{user.name}</span>
                 </button>
 
