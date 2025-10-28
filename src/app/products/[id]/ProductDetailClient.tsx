@@ -1,7 +1,6 @@
 'use client';
 
-// src/app/products/[id]/page.tsx
-// Product detail page - mobile-friendly
+// src/app/products/[id]/ProductDetailClient.tsx
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -46,22 +45,22 @@ interface Product {
   };
 }
 
-export default function ProductDetailPage({ params }: { params: { id: string } }) {
+export default function ProductDetailClient({ productId }: { productId: string }) {
   const router = useRouter();
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [product, setProduct] = useState<Product | null>(null);
-  const [showPhone, setShowPhone] = useState(false);
+  const [showPhone, setShowPhone] = useState(true);
 
   useEffect(() => {
     fetchProduct();
     trackView();
-  }, [params.id]);
+  }, [productId]);
 
   const fetchProduct = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`/api/products/${params.id}/details`);
+      const res = await fetch(`/api/products/${productId}/details`);
       const data = await res.json();
 
       if (res.ok) {
@@ -81,7 +80,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
 
   const trackView = async () => {
     try {
-      await fetch(`/api/products/${params.id}/view`, {
+      await fetch(`/api/products/${productId}/view`, {
         method: 'POST',
       });
     } catch (error) {
@@ -92,9 +91,8 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
   const handleCallSeller = async () => {
     setShowPhone(true);
 
-    // Track phone click
     try {
-      await fetch(`/api/products/${params.id}/phone-click`, {
+      await fetch(`/api/products/${productId}/phone-click`, {
         method: 'POST',
       });
     } catch (error) {
@@ -113,10 +111,9 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
           url: url,
         });
       } catch (error) {
-        // User cancelled share
+        // User cancelled
       }
     } else {
-      // Fallback: Copy to clipboard
       navigator.clipboard.writeText(url);
       toast.success('Link copied to clipboard!');
     }
@@ -159,12 +156,12 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
       )}
 
       <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-        {/* Left Column - Images */}
+        {/* Left - Images */}
         <div>
           <ImageGallery images={product.images} title={product.title} />
         </div>
 
-        {/* Right Column - Details */}
+        {/* Right - Details */}
         <div className="space-y-6">
           {/* Title & Price */}
           <div>
@@ -208,6 +205,15 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 <span>{product.user.name}</span>
               </div>
 
+              {/* Phone Number - Always visible and clickable */}
+              <a 
+                href={`tel:${product.user.phone}`}
+                className="flex items-center gap-2 text-gray-700 hover:text-blue-600"
+              >
+                <Phone size={18} />
+                <span className="font-medium">{product.user.phone}</span>
+              </a>
+
               <div className="flex items-center gap-2 text-gray-700">
                 <MapPin size={18} />
                 <span>{product.user.city}, {product.user.state}</span>
@@ -244,7 +250,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                   <button
                     onClick={handleCallSeller}
                     disabled={isSold}
-                    className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium text-lg"
+                    className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium text-lg"
                   >
                     <Phone size={20} />
                     Show Phone Number
@@ -252,18 +258,18 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
                 ) : (
                   <a
                     href={`tel:${product.user.phone}`}
-                    className="block w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-center font-medium text-lg"
+                    className="block w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-green-700 text-center font-medium text-lg"
                   >
                     <div className="flex items-center justify-center gap-2">
                       <Phone size={20} />
-                      <span>{product.user.phone}</span>
+                      <span>Call Seller</span>
                     </div>
                   </a>
                 )}
 
                 <button
                   onClick={handleShare}
-                  className="w-full py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-2 font-medium"
+                  className="w-full py-3 border border-gray-400 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-2 font-medium"
                 >
                   <Share2 size={20} />
                   Share Product
@@ -272,7 +278,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
             )}
           </div>
 
-          {/* Warning */}
+          {/* Safety Warning */}
           {!isOwnProduct && (
             <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
               <strong>Safety Tips:</strong> Meet in public places. Never send money in advance. 
@@ -282,7 +288,7 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
         </div>
       </div>
 
-      {/* Additional Details Section */}
+      {/* Additional Details */}
       <div className="mt-8 grid md:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="font-semibold text-lg mb-3">Product Details</h3>
@@ -303,12 +309,6 @@ export default function ProductDetailPage({ params }: { params: { id: string } }
               <span className="text-gray-600">Status:</span>
               <span className={`font-medium ${isSold ? 'text-gray-600' : 'text-green-600'}`}>
                 {product.status}
-              </span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Listed:</span>
-              <span className="font-medium">
-                {new Date(product.createdAt).toLocaleDateString()}
               </span>
             </div>
           </div>

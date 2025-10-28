@@ -95,7 +95,7 @@ export default function SubscriptionPage() {
             Your subscription is active. Start listing your products now.
           </p>
           <button
-            onClick={() => router.push('/product/new')}
+            onClick={() => router.push('/products/new')}
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
           >
             List a Product

@@ -44,18 +44,29 @@ export default function ImageUpload({ images, setImages, maxImages = 3 }: ImageU
 
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('upload_preset', 'marketplace'); // Create this in Cloudinary
-        formData.append('cloud_name', process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || '');
+        formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'ml_default');
+
+        const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+        
+        // Check if cloud name exists
+        if (!cloudName) {
+          toast.error('Cloudinary configuration missing');
+          return null;
+        }
 
         const res = await fetch(
-          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+          `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
           {
             method: 'POST',
             body: formData,
           }
         );
 
-        if (!res.ok) throw new Error('Upload failed');
+        if (!res.ok) {
+          const errorData = await res.json();
+          console.error('Cloudinary error:', errorData);
+          throw new Error(errorData.error?.message || 'Upload failed');
+        }
 
         const data = await res.json();
         return data.secure_url;
@@ -64,11 +75,13 @@ export default function ImageUpload({ images, setImages, maxImages = 3 }: ImageU
       const uploadedUrls = await Promise.all(uploadPromises);
       const validUrls = uploadedUrls.filter((url): url is string => url !== null);
 
-      setImages([...images, ...validUrls]);
-      toast.success(`${validUrls.length} image(s) uploaded`);
+      if (validUrls.length > 0) {
+        setImages([...images, ...validUrls]);
+        toast.success(`${validUrls.length} image(s) uploaded`);
+      }
     } catch (error) {
       console.error('Upload error:', error);
-      toast.error('Failed to upload images');
+      toast.error('Failed to upload images. Check console for details.');
     } finally {
       setUploading(false);
     }
@@ -82,7 +95,7 @@ export default function ImageUpload({ images, setImages, maxImages = 3 }: ImageU
     <div className="space-y-4">
       <div className="flex items-center gap-2">
         <label className="block text-sm font-medium">
-          Product Images (Max {maxImages})
+          Product Images (Max {maxImages}) *
         </label>
         <span className="text-xs text-gray-500">
           {images.length}/{maxImages} uploaded

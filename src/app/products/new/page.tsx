@@ -1,7 +1,7 @@
 'use client';
 
 // src/app/products/new/page.tsx
-// Product creation - requires ₹10/month subscription
+// Product creation - FREE FOR ALL (subscription code commented out)
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -20,9 +20,11 @@ export default function NewProductPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
-  const [checkingSubscription, setCheckingSubscription] = useState(true);
-  const [canList, setCanList] = useState(false);
-  const [subscriptionInfo, setSubscriptionInfo] = useState<any>(null);
+  // ==================== SUBSCRIPTION STATE (COMMENTED OUT) ====================
+  // const [checkingSubscription, setCheckingSubscription] = useState(true);
+  // const [canList, setCanList] = useState(false);
+  // const [subscriptionInfo, setSubscriptionInfo] = useState<any>(null);
+  // ==================== END SUBSCRIPTION STATE ====================
   const [categories, setCategories] = useState<Category[]>([]);
   
   const [formData, setFormData] = useState({
@@ -42,28 +44,32 @@ export default function NewProductPage() {
       return;
     }
     
-    checkSubscription();
+    // ==================== SUBSCRIPTION CHECK (COMMENTED OUT) ====================
+    // checkSubscription();
+    // ==================== END SUBSCRIPTION CHECK ====================
     fetchCategories();
   }, [user]);
 
-  const checkSubscription = async () => {
-    try {
-      const res = await fetch('/api/subscription/check');
-      const data = await res.json();
-      
-      setSubscriptionInfo(data);
-      setCanList(data.canList);
-      
-      if (!data.canList) {
-        toast.error('Subscribe for ₹10/month to start listing products');
-      }
-    } catch (error) {
-      console.error('Error checking subscription:', error);
-      toast.error('Failed to check subscription status');
-    } finally {
-      setCheckingSubscription(false);
-    }
-  };
+  // ==================== SUBSCRIPTION CHECK FUNCTION (COMMENTED OUT) ====================
+  // const checkSubscription = async () => {
+  //   try {
+  //     const res = await fetch('/api/subscription/check');
+  //     const data = await res.json();
+  //     
+  //     setSubscriptionInfo(data);
+  //     setCanList(data.canList);
+  //     
+  //     if (!data.canList) {
+  //       toast.error('Subscribe for ₹10/month to start listing products');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error checking subscription:', error);
+  //     toast.error('Failed to check subscription status');
+  //   } finally {
+  //     setCheckingSubscription(false);
+  //   }
+  // };
+  // ==================== END SUBSCRIPTION CHECK FUNCTION ====================
 
   const fetchCategories = async () => {
     try {
@@ -89,11 +95,13 @@ export default function NewProductPage() {
       return;
     }
 
-    if (!canList) {
-      toast.error('Please subscribe to list products');
-      router.push('/subscription');
-      return;
-    }
+    // ==================== SUBSCRIPTION CHECK BEFORE SUBMIT (COMMENTED OUT) ====================
+    // if (!canList) {
+    //   toast.error('Please subscribe to list products');
+    //   router.push('/subscription');
+    //   return;
+    // }
+    // ==================== END SUBSCRIPTION CHECK ====================
 
     setLoading(true);
 
@@ -113,12 +121,17 @@ export default function NewProductPage() {
         toast.success('Product listed successfully!');
         router.push('/dashboard');
       } else {
-        if (data.needsPayment) {
-          toast.error('Please subscribe to continue listing');
-          router.push('/subscription');
-        } else {
-          toast.error(data.error || 'Failed to create product');
-        }
+        // ==================== SUBSCRIPTION ERROR HANDLING (COMMENTED OUT) ====================
+        // if (data.needsPayment) {
+        //   toast.error('Please subscribe to continue listing');
+        //   router.push('/subscription');
+        // } else {
+        //   toast.error(data.error || 'Failed to create product');
+        // }
+        // ==================== END SUBSCRIPTION ERROR HANDLING ====================
+        
+        // FREE LISTING - Simple error handling
+        toast.error(data.error || 'Failed to create product');
       }
     } catch (error) {
       console.error('Create product error:', error);
@@ -132,75 +145,80 @@ export default function NewProductPage() {
     return null;
   }
 
-  if (checkingSubscription) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <Loader2 className="animate-spin text-blue-600" size={48} />
-      </div>
-    );
-  }
+  // ==================== SUBSCRIPTION LOADING STATE (COMMENTED OUT) ====================
+  // if (checkingSubscription) {
+  //   return (
+  //     <div className="flex justify-center items-center min-h-[60vh]">
+  //       <Loader2 className="animate-spin text-blue-600" size={48} />
+  //     </div>
+  //   );
+  // }
+  // ==================== END SUBSCRIPTION LOADING STATE ====================
 
+  // ==================== SUBSCRIPTION REQUIRED SCREEN (COMMENTED OUT) ====================
   // Show subscription required screen if not subscribed
-  if (!canList) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-12">
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Lock className="text-blue-600" size={32} />
-          </div>
-          
-          <h1 className="text-2xl font-bold mb-2">Subscription Required</h1>
-          <p className="text-gray-600 mb-6">
-            Subscribe for just ₹10/month to start listing your products
-          </p>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
-            <h3 className="font-semibold text-lg mb-3">What You Get:</h3>
-            <ul className="text-left space-y-2">
-              <li className="flex items-center gap-2">
-                <span className="text-green-600">✓</span>
-                <span>List unlimited products</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-green-600">✓</span>
-                <span>Auto-renewal every month</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-green-600">✓</span>
-                <span>Reach buyers across India</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <span className="text-green-600">✓</span>
-                <span>Manage all listings from dashboard</span>
-              </li>
-            </ul>
-          </div>
-
-          <button
-            onClick={() => router.push('/subscription')}
-            className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-lg"
-          >
-            Subscribe Now - ₹10/month
-          </button>
-
-          <button
-            onClick={() => router.push('/')}
-            className="w-full mt-3 py-2 text-gray-600 hover:text-gray-800"
-          >
-            Back to Home
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // if (!canList) {
+  //   return (
+  //     <div className="max-w-2xl mx-auto px-4 py-12">
+  //       <div className="bg-white rounded-lg shadow-md p-8 text-center">
+  //         <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+  //           <Lock className="text-blue-600" size={32} />
+  //         </div>
+  //         
+  //         <h1 className="text-2xl font-bold mb-2">Subscription Required</h1>
+  //         <p className="text-gray-600 mb-6">
+  //           Subscribe for just ₹10/month to start listing your products
+  //         </p>
+  //
+  //         <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6">
+  //           <h3 className="font-semibold text-lg mb-3">What You Get:</h3>
+  //           <ul className="text-left space-y-2">
+  //             <li className="flex items-center gap-2">
+  //               <span className="text-green-600">✓</span>
+  //               <span>List unlimited products</span>
+  //             </li>
+  //             <li className="flex items-center gap-2">
+  //               <span className="text-green-600">✓</span>
+  //               <span>Auto-renewal every month</span>
+  //             </li>
+  //             <li className="flex items-center gap-2">
+  //               <span className="text-green-600">✓</span>
+  //               <span>Reach buyers across India</span>
+  //             </li>
+  //             <li className="flex items-center gap-2">
+  //               <span className="text-green-600">✓</span>
+  //               <span>Manage all listings from dashboard</span>
+  //             </li>
+  //           </ul>
+  //         </div>
+  //
+  //         <button
+  //           onClick={() => router.push('/subscription')}
+  //           className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-lg"
+  //         >
+  //           Subscribe Now - ₹10/month
+  //         </button>
+  //
+  //         <button
+  //           onClick={() => router.push('/')}
+  //           className="w-full mt-3 py-2 text-gray-600 hover:text-gray-800"
+  //         >
+  //           Back to Home
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+  // ==================== END SUBSCRIPTION REQUIRED SCREEN ====================
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
-      <div className="bg-white rounded-lg shadow-md p-8">
-        <h1 className="text-3xl font-bold mb-6">List Your Product</h1>
+      <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
+        <h1 className="text-2xl md:text-3xl font-bold mb-6">List Your Product</h1>
 
+        {/* ==================== ACTIVE SUBSCRIPTION BANNER (COMMENTED OUT) ==================== */}
         {/* Active Subscription Banner */}
-        <div className="mb-6 p-4 rounded-lg bg-green-50 border border-green-200">
+        {/* <div className="mb-6 p-4 rounded-lg bg-green-50 border border-green-200">
           <div className="flex items-start gap-2">
             <AlertCircle size={20} className="text-green-600" />
             <div className="flex-1">
@@ -214,6 +232,14 @@ export default function NewProductPage() {
               )}
             </div>
           </div>
+        </div> */}
+        {/* ==================== END ACTIVE SUBSCRIPTION BANNER ==================== */}
+
+        {/* FREE LISTING BANNER (NEW) */}
+        <div className="mb-6 p-4 rounded-lg bg-green-50 border border-green-200">
+          <p className="text-sm text-green-700 font-medium">
+            ✓ Free product listing - No subscription required!
+          </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -301,7 +327,7 @@ export default function NewProductPage() {
           />
 
           {/* Location */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">
                 City *
@@ -358,7 +384,7 @@ export default function NewProductPage() {
                 Listing Product...
               </>
             ) : (
-              'List Product'
+              'List Product for Free' // Changed button text
             )}
           </button>
         </form>

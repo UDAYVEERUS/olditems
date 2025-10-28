@@ -1,11 +1,8 @@
 'use client';
 
-// src/components/ProductCard.tsx
-// Product card with link to detail page
-
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin, Eye } from 'lucide-react';
+import { MapPin, Eye, Phone } from 'lucide-react';
 
 interface Product {
   id: string;
@@ -15,6 +12,9 @@ interface Product {
   city: string;
   state: string;
   views?: number;
+  user?: {
+    phone: string;
+  };
 }
 
 interface ProductCardProps {
@@ -52,16 +52,26 @@ export default function ProductCard({ product }: ProductCardProps) {
             ₹{product.price.toLocaleString('en-IN')}
           </p>
 
-          <div className="flex items-center justify-between text-sm text-gray-600">
-            <div className="flex items-center gap-1">
-              <MapPin size={16} />
-              <span className="line-clamp-1">{product.city}, {product.state}</span>
-            </div>
-            
-            {product.views !== undefined && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm text-gray-600">
               <div className="flex items-center gap-1">
-                <Eye size={16} />
-                <span>{product.views}</span>
+                <MapPin size={16} />
+                <span className="line-clamp-1">{product.city}, {product.state}</span>
+              </div>
+              
+              {product.views !== undefined && (
+                <div className="flex items-center gap-1">
+                  <Eye size={16} />
+                  <span>{product.views}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Phone Number - Now will display */}
+            {product.user?.phone && (
+              <div className="flex items-center gap-1 text-sm text-gray-700">
+                <Phone size={16} />
+                <span>{product.user.phone}</span>
               </div>
             )}
           </div>

@@ -1,4 +1,4 @@
-// src/db/schema.ts - Drizzle Schema with Cashfree
+// src/db/schema.ts - Drizzle Schema (subscription fields commented out)
 
 import { mysqlTable, varchar, text, float, int, boolean, datetime, mysqlEnum, index } from 'drizzle-orm/mysql-core';
 import { relations } from 'drizzle-orm';
@@ -16,13 +16,14 @@ export const users = mysqlTable('users', {
   longitude: float('longitude'),
   isVerified: boolean('is_verified').default(false),
   
-  // Subscription fields
-  subscriptionStatus: mysqlEnum('subscription_status', ['INACTIVE', 'ACTIVE', 'PAST_DUE', 'CANCELLED']).default('INACTIVE'),
-  subscriptionId: varchar('subscription_id', { length: 255 }),
-  subscriptionStartDate: datetime('subscription_start_date'),
-  subscriptionEndDate: datetime('subscription_end_date'),
-  nextBillingDate: datetime('next_billing_date'),
-  freeListingsUsed: int('free_listings_used').default(0),
+  // ==================== SUBSCRIPTION FIELDS (COMMENTED OUT) ====================
+  // subscriptionStatus: mysqlEnum('subscription_status', ['INACTIVE', 'ACTIVE', 'PAST_DUE', 'CANCELLED']).default('INACTIVE'),
+  // subscriptionId: varchar('subscription_id', { length: 255 }),
+  // subscriptionStartDate: datetime('subscription_start_date'),
+  // subscriptionEndDate: datetime('subscription_end_date'),
+  // nextBillingDate: datetime('next_billing_date'),
+  // freeListingsUsed: int('free_listings_used').default(0),
+  // ==================== END SUBSCRIPTION FIELDS ====================
   
   // Password reset fields
   resetToken: varchar('reset_token', { length: 255 }),
@@ -33,7 +34,7 @@ export const users = mysqlTable('users', {
 }, (table) => ({
   emailIdx: index('email_idx').on(table.email),
   phoneIdx: index('phone_idx').on(table.phone),
-  subscriptionStatusIdx: index('subscription_status_idx').on(table.subscriptionStatus),
+  // subscriptionStatusIdx: index('subscription_status_idx').on(table.subscriptionStatus), // COMMENTED OUT
 }));
 
 export const categories = mysqlTable('categories', {
@@ -73,32 +74,34 @@ export const products = mysqlTable('products', {
   locationIdx: index('location_idx').on(table.latitude, table.longitude),
 }));
 
-export const transactions = mysqlTable('transactions', {
-  id: varchar('id', { length: 255 }).primaryKey(),
-  userId: varchar('user_id', { length: 255 }).notNull(),
-  type: mysqlEnum('type', ['SUBSCRIPTION_PAYMENT', 'SUBSCRIPTION_RENEWAL']).notNull(),
-  amount: float('amount').notNull(),
-  currency: varchar('currency', { length: 10 }).default('INR'),
-  status: mysqlEnum('status', ['PENDING', 'SUCCESS', 'FAILED', 'REFUNDED']).notNull(),
-  
-  // ============ CASHFREE FIELDS (CHANGED FROM RAZORPAY) ============
-  cashfreeOrderId: varchar('cashfree_order_id', { length: 255 }),
-  cashfreeTransactionId: varchar('cashfree_transaction_id', { length: 255 }),
-  cashfreePaymentStatus: varchar('cashfree_payment_status', { length: 50 }),
-  
-  billingPeriodStart: datetime('billing_period_start'),
-  billingPeriodEnd: datetime('billing_period_end'),
-  createdAt: datetime('created_at').notNull().default(new Date()),
-}, (table) => ({
-  userIdIdx: index('user_id_idx').on(table.userId),
-  statusIdx: index('status_idx').on(table.status),
-  createdAtIdx: index('created_at_idx').on(table.createdAt),
-  cashfreeOrderIdIdx: index('cashfree_order_id_idx').on(table.cashfreeOrderId),
-}));
+// ==================== TRANSACTIONS TABLE (COMMENTED OUT) ====================
+// export const transactions = mysqlTable('transactions', {
+//   id: varchar('id', { length: 255 }).primaryKey(),
+//   userId: varchar('user_id', { length: 255 }).notNull(),
+//   type: mysqlEnum('type', ['SUBSCRIPTION_PAYMENT', 'SUBSCRIPTION_RENEWAL']).notNull(),
+//   amount: float('amount').notNull(),
+//   currency: varchar('currency', { length: 10 }).default('INR'),
+//   status: mysqlEnum('status', ['PENDING', 'SUCCESS', 'FAILED', 'REFUNDED']).notNull(),
+//   
+//   // CASHFREE FIELDS
+//   cashfreeOrderId: varchar('cashfree_order_id', { length: 255 }),
+//   cashfreeTransactionId: varchar('cashfree_transaction_id', { length: 255 }),
+//   cashfreePaymentStatus: varchar('cashfree_payment_status', { length: 50 }),
+//   
+//   billingPeriodStart: datetime('billing_period_start'),
+//   billingPeriodEnd: datetime('billing_period_end'),
+//   createdAt: datetime('created_at').notNull().default(new Date()),
+// }, (table) => ({
+//   userIdIdx: index('user_id_idx').on(table.userId),
+//   statusIdx: index('status_idx').on(table.status),
+//   createdAtIdx: index('created_at_idx').on(table.createdAt),
+//   cashfreeOrderIdIdx: index('cashfree_order_id_idx').on(table.cashfreeOrderId),
+// }));
+// ==================== END TRANSACTIONS TABLE ====================
 
 export const usersRelations = relations(users, ({ many }) => ({
   products: many(products),
-  transactions: many(transactions),
+  // transactions: many(transactions), // COMMENTED OUT
 }));
 
 export const productsRelations = relations(products, ({ one }) => ({
@@ -112,9 +115,11 @@ export const productsRelations = relations(products, ({ one }) => ({
   }),
 }));
 
-export const transactionsRelations = relations(transactions, ({ one }) => ({
-  user: one(users, {
-    fields: [transactions.userId],
-    references: [users.id],
-  }),
-}));
+// ==================== TRANSACTION RELATIONS (COMMENTED OUT) ====================
+// export const transactionsRelations = relations(transactions, ({ one }) => ({
+//   user: one(users, {
+//     fields: [transactions.userId],
+//     references: [users.id],
+//   }),
+// }));
+// ==================== END TRANSACTION RELATIONS ====================

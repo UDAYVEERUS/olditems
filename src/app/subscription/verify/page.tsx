@@ -49,7 +49,7 @@ function VerifyContent() {
         
         // Redirect to product creation after 2 seconds
         setTimeout(() => {
-          router.push('/product/new');
+          router.push('/products/new');
         }, 2000);
       } else {
         setStatus('failed');

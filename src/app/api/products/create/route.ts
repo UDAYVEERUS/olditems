@@ -1,5 +1,5 @@
 // src/app/api/products/create/route.ts
-// Create product - requires active subscription (no free listings)
+// Create product - FREE LISTING (subscription checks commented out)
 
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
@@ -57,28 +57,30 @@ export async function POST(request: Request) {
       );
     }
 
+    // ==================== SUBSCRIPTION CHECKS (COMMENTED OUT) ====================
     // Check if user has active subscription
-    const now = new Date();
-    const hasActiveSubscription = 
-      user.subscriptionStatus === 'ACTIVE' && 
-      user.subscriptionEndDate && 
-      new Date(user.subscriptionEndDate) > now;
+    // const now = new Date();
+    // const hasActiveSubscription = 
+    //   user.subscriptionStatus === 'ACTIVE' && 
+    //   user.subscriptionEndDate && 
+    //   new Date(user.subscriptionEndDate) > now;
 
     // Must have active subscription to list
-    if (!hasActiveSubscription) {
-      return NextResponse.json(
-        { 
-          error: 'Please subscribe to list products. Pay ₹10/month to start listing.', 
-          needsPayment: true 
-        },
-        { status: 403 }
-      );
-    }
+    // if (!hasActiveSubscription) {
+    //   return NextResponse.json(
+    //     { 
+    //       error: 'Please subscribe to list products. Pay ₹10/month to start listing.', 
+    //       needsPayment: true 
+    //     },
+    //     { status: 403 }
+    //   );
+    // }
+    // ==================== END SUBSCRIPTION CHECKS ====================
 
     // Generate product ID
     const productId = `prod_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    // Create product
+    // Create product - NOW FREE FOR ALL USERS
     await db.insert(products).values({
       id: productId,
       title,

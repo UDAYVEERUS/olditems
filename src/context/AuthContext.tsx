@@ -1,7 +1,7 @@
 'use client';
 
 // src/context/AuthContext.tsx
-// Context API for user authentication state
+// Context API for user authentication state (subscription fields commented out)
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
@@ -10,10 +10,12 @@ interface User {
   name: string;
   email: string;
   phone: string;
-  subscriptionStatus: string;
+  // ==================== SUBSCRIPTION FIELDS (COMMENTED OUT) ====================
+  // subscriptionStatus: string;
+  // subscriptionEndDate?: string;
+  // freeListingsUsed: number;
+  // ==================== END SUBSCRIPTION FIELDS ====================
   city?: string;
-  subscriptionEndDate?: string;
-  freeListingsUsed: number;
 }
 
 interface AuthContextType {

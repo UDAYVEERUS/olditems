@@ -1,5 +1,5 @@
 // src/app/api/auth/me/route.ts
-// Get current authenticated user with Drizzle ORM
+// Get current authenticated user (subscription fields commented out)
 
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
@@ -28,9 +28,11 @@ export async function GET() {
         city: users.city,
         state: users.state,
         pincode: users.pincode,
-        subscriptionStatus: users.subscriptionStatus,
-        subscriptionEndDate: users.subscriptionEndDate,
-        freeListingsUsed: users.freeListingsUsed,
+        // ==================== SUBSCRIPTION FIELDS (COMMENTED OUT) ====================
+        // subscriptionStatus: users.subscriptionStatus,
+        // subscriptionEndDate: users.subscriptionEndDate,
+        // freeListingsUsed: users.freeListingsUsed,
+        // ==================== END SUBSCRIPTION FIELDS ====================
         createdAt: users.createdAt,
       })
       .from(users)

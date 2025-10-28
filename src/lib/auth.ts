@@ -1,5 +1,5 @@
 // src/lib/auth.ts
-// Authentication utilities: password hashing, JWT tokens, session verification
+// Authentication utilities - NO SUBSCRIPTION CODE HERE ✅
 
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';

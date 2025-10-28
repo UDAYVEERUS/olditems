@@ -1,5 +1,5 @@
 // src/app/api/admin/products/route.ts
-// Get all products for admin
+// Get all products for admin (NO CHANGES NEEDED - no subscription code)
 
 import { NextResponse } from 'next/server';
 import { db } from '@/db';

@@ -1,5 +1,5 @@
 // src/app/api/admin/users/route.ts
-// Get all users for admin
+// Get all users for admin (SUBSCRIPTION FIELDS COMMENTED OUT IN RESPONSE)
 
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
@@ -43,8 +43,10 @@ export async function GET(request: Request) {
         phone: users.phone,
         city: users.city,
         state: users.state,
-        subscriptionStatus: users.subscriptionStatus,
-        subscriptionEndDate: users.subscriptionEndDate,
+        // ==================== SUBSCRIPTION FIELDS (COMMENTED OUT) ====================
+        // subscriptionStatus: users.subscriptionStatus,
+        // subscriptionEndDate: users.subscriptionEndDate,
+        // ==================== END SUBSCRIPTION FIELDS ====================
         createdAt: users.createdAt,
       })
       .from(users)

@@ -1,14 +1,13 @@
 // src/app/api/admin/stats/route.ts
-// Get admin dashboard statistics
+// Get admin dashboard statistics (SUBSCRIPTION STATS COMMENTED OUT)
 
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
-import { users, products, transactions } from '@/db/schema';
+import { users, products } from '@/db/schema'; // Removed transactions import
 import { getCurrentUser } from '@/lib/auth';
-import { count, eq, sum, and, gte } from 'drizzle-orm';
+import { count, eq } from 'drizzle-orm'; // Removed: sum, and, gte
 
-// Simple admin check (you can enhance this with admin role in DB)
-const ADMIN_EMAILS = ['udayveerus348566@gmail.com']; // Add your admin email
+const ADMIN_EMAILS = ['udayveerus348566@gmail.com'];
 
 export async function GET() {
   try {
@@ -40,11 +39,13 @@ export async function GET() {
       .select({ value: count() })
       .from(users);
 
+    // ==================== SUBSCRIPTION STATS (COMMENTED OUT) ====================
     // Get active subscribers
-    const [{ value: activeSubscribers }] = await db
-      .select({ value: count() })
-      .from(users)
-      .where(eq(users.subscriptionStatus, 'ACTIVE'));
+    // const [{ value: activeSubscribers }] = await db
+    //   .select({ value: count() })
+    //   .from(users)
+    //   .where(eq(users.subscriptionStatus, 'ACTIVE'));
+    // ==================== END SUBSCRIPTION STATS ====================
 
     // Get total products
     const [{ value: totalProducts }] = await db
@@ -57,38 +58,37 @@ export async function GET() {
       .from(products)
       .where(eq(products.status, 'ACTIVE'));
 
+    // ==================== REVENUE STATS (COMMENTED OUT) ====================
     // Get total revenue (all successful transactions)
-    const [revenueData] = await db
-      .select({ value: sum(transactions.amount) })
-      .from(transactions)
-      .where(eq(transactions.status, 'SUCCESS'));
-
-    const totalRevenue = revenueData?.value || 0;
+    // const [revenueData] = await db
+    //   .select({ value: sum(transactions.amount) })
+    //   .from(transactions)
+    //   .where(eq(transactions.status, 'SUCCESS'));
+    // const totalRevenue = revenueData?.value || 0;
 
     // Get this month's revenue
-    const now = new Date();
-    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-    const [monthRevenueData] = await db
-      .select({ value: sum(transactions.amount) })
-      .from(transactions)
-      .where(
-        and(
-          eq(transactions.status, 'SUCCESS'),
-          gte(transactions.createdAt, firstDayOfMonth)
-        )
-      );
-
-    const monthlyRevenue = monthRevenueData?.value || 0;
+    // const now = new Date();
+    // const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    // const [monthRevenueData] = await db
+    //   .select({ value: sum(transactions.amount) })
+    //   .from(transactions)
+    //   .where(
+    //     and(
+    //       eq(transactions.status, 'SUCCESS'),
+    //       gte(transactions.createdAt, firstDayOfMonth)
+    //     )
+    //   );
+    // const monthlyRevenue = monthRevenueData?.value || 0;
+    // ==================== END REVENUE STATS ====================
 
     return NextResponse.json({
       stats: {
         totalUsers,
-        activeSubscribers,
+        // activeSubscribers, // COMMENTED OUT
         totalProducts,
         activeProducts,
-        totalRevenue,
-        monthlyRevenue,
+        // totalRevenue, // COMMENTED OUT
+        // monthlyRevenue, // COMMENTED OUT
       },
     });
   } catch (error) {

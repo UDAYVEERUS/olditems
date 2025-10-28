@@ -1,4 +1,5 @@
 // src/app/api/auth/signup/route.ts
+// User registration (subscription fields commented out)
 
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
@@ -61,7 +62,9 @@ export async function POST(request: Request) {
         email: users.email,
         phone: users.phone,
         city: users.city,
-        subscriptionStatus: users.subscriptionStatus,
+        // ==================== SUBSCRIPTION FIELD (COMMENTED OUT) ====================
+        // subscriptionStatus: users.subscriptionStatus,
+        // ==================== END SUBSCRIPTION FIELD ====================
       })
       .from(users)
       .where(eq(users.id, userId));
