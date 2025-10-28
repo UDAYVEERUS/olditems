@@ -246,7 +246,7 @@ export default function NewProductPage() {
           {/* Title */}
           <div>
             <label className="block text-sm font-medium mb-1">
-              Product Title *
+              Product Title * (सामन का नाम)
             </label>
             <input
               type="text"
@@ -262,7 +262,7 @@ export default function NewProductPage() {
           {/* Description */}
           <div>
             <label className="block text-sm font-medium mb-1">
-              Description *
+              Description * (सामन के बारे में)
             </label>
             <textarea
               value={formData.description}

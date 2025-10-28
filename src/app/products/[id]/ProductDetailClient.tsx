@@ -139,7 +139,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
       {/* Back Button */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4"
+        className="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-gray-800 mb-4"
       >
         <ArrowLeft size={20} />
         <span>Back</span>
@@ -233,13 +233,13 @@ export default function ProductDetailClient({ productId }: { productId: string }
           {/* Action Buttons */}
           <div className="space-y-3 pt-4">
             {isOwnProduct ? (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-blue-700 text-center">
+              <div className=" p- bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-primary text-center">
                   This is your product. Manage it from your dashboard.
                 </p>
                 <button
                   onClick={() => router.push('/dashboard')}
-                  className="w-full mt-3 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                  className="w-full cursor-pointer mt-3 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
                 >
                   Go to Dashboard
                 </button>

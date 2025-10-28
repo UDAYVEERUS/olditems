@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
-  const [subscriptionInfo, setSubscriptionInfo] = useState<any>(null);
+  // const [subscriptionInfo, setSubscriptionInfo] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'active' | 'sold'>('all');
 
   useEffect(() => {
@@ -47,7 +47,7 @@ export default function DashboardPage() {
     }
 
     fetchProducts();
-    fetchSubscriptionInfo();
+    // fetchSubscriptionInfo();
   }, [user]);
 
   const fetchProducts = async () => {
@@ -64,39 +64,39 @@ export default function DashboardPage() {
     }
   };
 
-  const fetchSubscriptionInfo = async () => {
-    try {
-      const res = await fetch('/api/subscription/check');
-      const data = await res.json();
-      setSubscriptionInfo(data);
-    } catch (error) {
-      console.error('Error fetching subscription:', error);
-    }
-  };
+  // const fetchSubscriptionInfo = async () => {
+  //   try {
+  //     const res = await fetch('/api/subscription/check');
+  //     const data = await res.json();
+  //     setSubscriptionInfo(data);
+  //   } catch (error) {
+  //     console.error('Error fetching subscription:', error);
+  //   }
+  // };
 
-  const handleCancelSubscription = async () => {
-    if (!confirm('Are you sure you want to cancel your subscription? Your products will be hidden.')) {
-      return;
-    }
+  // const handleCancelSubscription = async () => {
+  //   if (!confirm('Are you sure you want to cancel your subscription? Your products will be hidden.')) {
+  //     return;
+  //   }
 
-    try {
-      const res = await fetch('/api/subscription/cancel', {
-        method: 'POST',
-      });
+  //   try {
+  //     const res = await fetch('/api/subscription/cancel', {
+  //       method: 'POST',
+  //     });
 
-      const data = await res.json();
+  //     const data = await res.json();
 
-      if (res.ok) {
-        toast.success('Subscription cancelled');
-        fetchSubscriptionInfo();
-        fetchProducts();
-      } else {
-        toast.error(data.error || 'Failed to cancel subscription');
-      }
-    } catch (error) {
-      toast.error('Something went wrong');
-    }
-  };
+  //     if (res.ok) {
+  //       toast.success('Subscription cancelled');
+  //       fetchSubscriptionInfo();
+  //       fetchProducts();
+  //     } else {
+  //       toast.error(data.error || 'Failed to cancel subscription');
+  //     }
+  //   } catch (error) {
+  //     toast.error('Something went wrong');
+  //   }
+  // };
 
   if (!user) {
     return null;
@@ -145,7 +145,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Subscription Status Card */}
-      {subscriptionInfo && (
+      {/* {subscriptionInfo && (
         <div className={`mb-6 p-4 rounded-lg ${
           subscriptionInfo.hasActiveSubscription 
             ? 'bg-green-50 border border-green-200' 
@@ -194,7 +194,7 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4 mb-6">

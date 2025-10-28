@@ -8,6 +8,7 @@ import Header from '@/components/Header';
 import { AuthProvider } from '@/context/AuthContext';
 import { SearchProvider } from '@/context/SearchContext';
 import { Toaster } from 'react-hot-toast';
+import Footer from '@/components/Footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -31,6 +32,7 @@ export default function RootLayout({
               {children}
             </main>
             <Toaster position="top-right" />
+            <Footer />
           </SearchProvider>
         </AuthProvider>
       </body>

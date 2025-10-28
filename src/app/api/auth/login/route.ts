@@ -1,5 +1,5 @@
 // src/app/api/auth/login/route.ts
-// User login with Drizzle ORM
+// Login endpoint that sets the auth cookie
 
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
 
     if (!identifier || !password) {
       return NextResponse.json(
-        { error: 'Email/Phone and password are required' },
+        { error: 'Email/phone and password are required' },
         { status: 400 }
       );
     }
@@ -23,7 +23,12 @@ export async function POST(request: Request) {
     const [user] = await db
       .select()
       .from(users)
-      .where(or(eq(users.email, identifier), eq(users.phone, identifier)))
+      .where(
+        or(
+          eq(users.email, identifier),
+          eq(users.phone, identifier)
+        )
+      )
       .limit(1);
 
     if (!user) {
@@ -35,7 +40,7 @@ export async function POST(request: Request) {
 
     // Verify password
     const isValidPassword = await comparePassword(password, user.password);
-
+    
     if (!isValidPassword) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
@@ -43,18 +48,33 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate token
+    // Generate JWT token
     const token = generateToken(user.id);
+
+    // Set the auth cookie - THIS IS THE KEY PART
     await setAuthCookie(token);
 
-    // Return user data (exclude password)
-    const { password: _, ...userWithoutPassword } = user;
+    // Return user data (without password)
+    const userData = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      city: user.city,
+      state: user.state,
+      pincode: user.pincode,
+      // ==================== SUBSCRIPTION FIELDS (COMMENTED OUT) ====================
+      // subscriptionStatus: user.subscriptionStatus,
+      // subscriptionEndDate: user.subscriptionEndDate,
+      // freeListingsUsed: user.freeListingsUsed,
+      // ==================== END SUBSCRIPTION FIELDS ====================
+    };
 
     return NextResponse.json({
-      success: true,
-      user: userWithoutPassword,
-      token,
+      user: userData,
+      message: 'Login successful'
     });
+
   } catch (error) {
     console.error('Login error:', error);
     return NextResponse.json(
