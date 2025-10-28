@@ -8,6 +8,8 @@ import { useSearchParams } from 'next/navigation';
 import ProductCard from '@/components/ProductCard';
 import { Loader2, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import toast from 'react-hot-toast';
+export const runtime = 'edge';
+
 
 interface Product {
   id: string;
