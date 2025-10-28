@@ -25,7 +25,7 @@ interface Product {
   };
 }
 
-interface Props {
+interface Props { 
   product: Product;
   onUpdate: () => void;
 }
