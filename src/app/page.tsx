@@ -1,12 +1,11 @@
 'use client';
 
 // src/app/page.tsx
-// Homepage with Context API
-
 import { useEffect, useState } from 'react';
 import { useSearch } from '@/context/SearchContext';
 import ProductCard from '@/components/ProductCard';
 import { Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 interface Product {
   id: string;
@@ -15,9 +14,20 @@ interface Product {
   images: string[];
   city: string;
   state: string;
-  user: {
+  seller?: {
+    id: string;
     name: string;
     phone: string;
+    email?: string;
+    city?: string;
+    state?: string;
+  };
+  user?: {
+    id: string;
+    name: string;
+    phone: string;
+    city?: string;
+    state?: string;
   };
 }
 
@@ -38,6 +48,7 @@ export default function HomePage() {
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '20',
+        sortBy: 'latest', // Default sort
       });
 
       if (searchQuery) params.append('search', searchQuery);
@@ -46,10 +57,16 @@ export default function HomePage() {
       const res = await fetch(`/api/products?${params}`);
       const data = await res.json();
 
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to fetch products');
+      }
+
       setProducts(data.products || []);
       setTotalPages(data.pagination?.totalPages || 1);
     } catch (error) {
       console.error('Error fetching products:', error);
+      toast.error('Failed to load products');
+      setProducts([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -66,13 +83,12 @@ export default function HomePage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-4">
       <div className="mb-6">
-        {/* <h1 className="text-xl sm:text-3xl font-bold mb-2 text-center">
-          {searchQuery ? `Search results for "${searchQuery}"` : 'All Products'}
-          Browse Old Products
-        </h1> */}
-        {/* <p className="text-gray-600">
+        <h1 className="text-xl sm:text-3xl font-bold mb-2 text-center">
+          {searchQuery ? `Search results for "${searchQuery}"` : 'Browse Products'}
+        </h1>
+        <p className="text-gray-600 text-center">
           {products.length} products found
-        </p> */}
+        </p>
       </div>
 
       {products.length === 0 ? (
@@ -84,7 +100,14 @@ export default function HomePage() {
         <>
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
             {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard 
+                key={product.id} 
+                product={{
+                  ...product,
+                  // Normalize to always have seller field
+                  seller: product.seller || product.user
+                }} 
+              />
             ))}
           </div>
 

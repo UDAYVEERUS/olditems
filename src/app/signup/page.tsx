@@ -1,8 +1,5 @@
 'use client';
 
-// src/app/signup/page.tsx
-// Signup page without OTP verification
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -14,6 +11,9 @@ export default function SignupPage() {
   const router = useRouter();
   const { setUser } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpVerified, setOtpVerified] = useState(false);
+  const [otp, setOtp] = useState('');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -26,27 +26,67 @@ export default function SignupPage() {
     pincode: '',
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Validation
-    if (!formData.name || !formData.email || !formData.phone || !formData.password || !formData.city || !formData.state || !formData.pincode) {
-      toast.error('All fields are required');
+  // Send OTP
+  const sendOtp = async () => {
+    if (!/^[0-9]{10}$/.test(formData.phone)) {
+      toast.error('Enter a valid 10-digit phone number');
       return;
     }
 
-    if (!/^[0-9]{10}$/.test(formData.phone)) {
-      toast.error('Please enter valid 10-digit phone number');
+    setLoading(true);
+    const res = await fetch('/api/auth/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: formData.phone }),
+    });
+
+    const data = await res.json();
+    setLoading(false);
+
+    if (res.ok) {
+      setOtpSent(true);
+      toast.success('OTP sent successfully!');
+    } else {
+      toast.error(data.error || 'Failed to send OTP');
+    }
+  };
+
+  // Verify OTP
+  const verifyOtp = async () => {
+    if (!otp) {
+      toast.error('Enter OTP');
+      return;
+    }
+
+    setLoading(true);
+    const res = await fetch('/api/auth/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone: formData.phone, otp }),
+    });
+
+    const data = await res.json();
+    setLoading(false);
+
+    if (res.ok) {
+      setOtpVerified(true);
+      toast.success('Phone verified successfully!');
+    } else {
+      toast.error(data.error || 'Invalid OTP');
+    }
+  };
+
+  // Signup after OTP verification
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!otpVerified) {
+      toast.error('Please verify your phone number first');
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
-      return;
-    }
-
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters');
       return;
     }
 
@@ -56,14 +96,8 @@ export default function SignupPage() {
     }
 
     setLoading(true);
-
     try {
-      const payload = {
-        ...formData,
-        latitude: 0,
-        longitude: 0,
-      };
-
+      const payload = { ...formData, latitude: 0, longitude: 0 };
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -71,7 +105,6 @@ export default function SignupPage() {
       });
 
       const data = await res.json();
-
       if (res.ok) {
         setUser(data.user);
         toast.success('Account created successfully!');
@@ -79,7 +112,7 @@ export default function SignupPage() {
       } else {
         toast.error(data.error || 'Signup failed');
       }
-    } catch (error) {
+    } catch {
       toast.error('Something went wrong');
     } finally {
       setLoading(false);
@@ -118,21 +151,58 @@ export default function SignupPage() {
             />
           </div>
 
-          {/* Phone */}
+          {/* Phone + Send OTP */}
           <div>
             <label className="block text-sm font-medium mb-1">Phone Number *</label>
-            <input
-              type="tel"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              required
-              pattern="[0-9]{10}"
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="10-digit mobile number"
-            />
+            <div className="flex gap-2">
+              <input
+                type="tel"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                required
+                pattern="[0-9]{10}"
+                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="10-digit mobile number"
+              />
+              <button
+                type="button"
+                onClick={sendOtp}
+                disabled={loading}
+                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+              >
+                {loading ? 'Sending...' : otpSent ? 'Resend OTP' : 'Send OTP'}
+              </button>
+            </div>
           </div>
 
-          {/* Password */}
+          {/* OTP Field (only visible after OTP sent) */}
+          {otpSent && (
+            <div>
+              <label className="block text-sm font-medium mb-1">Enter OTP *</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter OTP"
+                />
+                <button
+                  type="button"
+                  onClick={verifyOtp}
+                  disabled={loading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {loading ? 'Verifying...' : 'Verify'}
+                </button>
+              </div>
+              {otpVerified && (
+                <p className="text-green-600 text-sm mt-1">✅ Phone verified</p>
+              )}
+            </div>
+          )}
+
+          {/* Passwords */}
           <div>
             <label className="block text-sm font-medium mb-1">Password *</label>
             <input
@@ -146,7 +216,6 @@ export default function SignupPage() {
             />
           </div>
 
-          {/* Confirm Password */}
           <div>
             <label className="block text-sm font-medium mb-1">Confirm Password *</label>
             <input
@@ -159,7 +228,7 @@ export default function SignupPage() {
             />
           </div>
 
-          {/* Location */}
+          {/* City, State, Pincode */}
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">City *</label>
