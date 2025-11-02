@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.id, currentUser.userId))
+.where(eq(users.id, currentUser.id))
       .limit(1);
 
     if (!user) {
@@ -87,7 +87,7 @@ export async function POST(request: Request) {
       description,
       price: parseFloat(price),
       categoryId,
-      userId: user.id,
+      userId: user.id.toString(),
       images: JSON.stringify(images),
       city,
       state,

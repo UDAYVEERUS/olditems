@@ -1,10 +1,9 @@
-// src/db/schema.ts - Drizzle Schema (subscription fields commented out)
-
-import { mysqlTable, varchar, text, float, int, boolean, datetime, mysqlEnum, index } from 'drizzle-orm/mysql-core';
-import { relations } from 'drizzle-orm';
+import { mysqlTable, varchar, text, float, int, boolean, datetime, mysqlEnum, index, serial } from 'drizzle-orm/mysql-core';
+import { relations, sql } from 'drizzle-orm';
 
 export const users = mysqlTable('users', {
-  id: varchar('id', { length: 255 }).primaryKey(),
+  id: serial('id').primaryKey(), // numeric auto-increment ID
+  userId: varchar('user_id', { length: 10 }).notNull().unique(), // formatted readable ID
   name: varchar('name', { length: 255 }).notNull(),
   email: varchar('email', { length: 255 }).notNull().unique(),
   phone: varchar('phone', { length: 20 }).notNull().unique(),
@@ -15,7 +14,6 @@ export const users = mysqlTable('users', {
   latitude: float('latitude'),
   longitude: float('longitude'),
   isVerified: boolean('is_verified').default(false),
-  
   // ==================== SUBSCRIPTION FIELDS (COMMENTED OUT) ====================
   // subscriptionStatus: mysqlEnum('subscription_status', ['INACTIVE', 'ACTIVE', 'PAST_DUE', 'CANCELLED']).default('INACTIVE'),
   // subscriptionId: varchar('subscription_id', { length: 255 }),
@@ -26,15 +24,15 @@ export const users = mysqlTable('users', {
   // ==================== END SUBSCRIPTION FIELDS ====================
   
   // Password reset fields
-  resetToken: varchar('reset_token', { length: 255 }),
+   resetToken: varchar('reset_token', { length: 255 }),
   resetTokenExpiry: datetime('reset_token_expiry'),
-  
-  createdAt: datetime('created_at').notNull().default(new Date()),
-  updatedAt: datetime('updated_at').notNull().default(new Date()),
+  createdAt: datetime('created_at').notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: datetime('updated_at')
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`),
 }, (table) => ({
   emailIdx: index('email_idx').on(table.email),
   phoneIdx: index('phone_idx').on(table.phone),
-  // subscriptionStatusIdx: index('subscription_status_idx').on(table.subscriptionStatus), // COMMENTED OUT
 }));
 
 export const categories = mysqlTable('categories', {

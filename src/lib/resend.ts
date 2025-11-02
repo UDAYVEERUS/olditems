@@ -71,7 +71,7 @@
 //           <p>This link will expire in 1 hour.</p>
 //           <p>If you didn't request this, please ignore this email.</p>
 //           <p>Best regards,<br>The Marketplace Team</p>
-//         </div>
+//         </div>s
 //       `,
 //     });
 

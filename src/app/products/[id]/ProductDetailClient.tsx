@@ -131,7 +131,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
     return null;
   }
 
-  const isOwnProduct = user?.id === product.user.id;
+const isOwnProduct = String(user?.id) === String(product.user.id);
   const isSold = product.status === 'SOLD';
 
   return (

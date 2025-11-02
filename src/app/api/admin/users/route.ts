@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     const [user] = await db
       .select({ email: users.email })
       .from(users)
-      .where(eq(users.id, currentUser.userId))
+      .where(eq(users.id, currentUser.id))
       .limit(1);
 
     if (!user || !ADMIN_EMAILS.includes(user.email)) {

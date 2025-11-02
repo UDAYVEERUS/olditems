@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { sendPasswordResetEmail } from '@/lib/resend';
+// import { sendPasswordResetEmail } from '@/lib/resend';
 import crypto from 'crypto';
 
 export async function POST(request: Request) {
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
       .where(eq(users.id, user.id));
 
     // Send reset email
-    await sendPasswordResetEmail(user.email, user.name, resetToken);
+    // await sendPasswordResetEmail(user.email, user.name, resetToken);
 
     return NextResponse.json({
       success: true,

@@ -1,11 +1,11 @@
 // src/app/api/products/[id]/route.ts
 // Update and delete product
 
-import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { products } from '@/db/schema';
-import { getCurrentUser } from '@/lib/auth';
-import { eq, and } from 'drizzle-orm';
+import { NextResponse } from "next/server";
+import { db } from "@/db";
+import { products } from "@/db/schema";
+import { getCurrentUser } from "@/lib/auth";
+import { eq, and } from "drizzle-orm";
 
 // Update product
 export async function PUT(
@@ -17,32 +17,48 @@ export async function PUT(
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
-    const { title, description, price, categoryId, images, city, state, pincode, latitude, longitude } = body;
+    const {
+      title,
+      description,
+      price,
+      categoryId,
+      images,
+      city,
+      state,
+      pincode,
+      latitude,
+      longitude,
+    } = body;
 
-    if (!title || !description || !price || !categoryId || !city || !state || !pincode) {
+    if (
+      !title ||
+      !description ||
+      !price ||
+      !categoryId ||
+      !city ||
+      !state ||
+      !pincode
+    ) {
       return NextResponse.json(
-        { error: 'All fields are required' },
+        { error: "All fields are required" },
         { status: 400 }
       );
     }
 
     if (images.length === 0) {
       return NextResponse.json(
-        { error: 'At least one image is required' },
+        { error: "At least one image is required" },
         { status: 400 }
       );
     }
 
     if (images.length > 3) {
       return NextResponse.json(
-        { error: 'Maximum 3 images allowed' },
+        { error: "Maximum 3 images allowed" },
         { status: 400 }
       );
     }
@@ -51,16 +67,13 @@ export async function PUT(
       .select()
       .from(products)
       .where(
-        and(
-          eq(products.id, id),
-          eq(products.userId, currentUser.userId)
-        )
+        and(eq(products.id, id), eq(products.userId, String(currentUser.id)))
       )
       .limit(1);
 
     if (!product) {
       return NextResponse.json(
-        { error: 'Product not found or unauthorized' },
+        { error: "Product not found or unauthorized" },
         { status: 404 }
       );
     }
@@ -83,12 +96,12 @@ export async function PUT(
 
     return NextResponse.json({
       success: true,
-      message: 'Product updated successfully',
+      message: "Product updated successfully",
     });
   } catch (error) {
-    console.error('Update product error:', error);
+    console.error("Update product error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -104,42 +117,34 @@ export async function DELETE(
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const [product] = await db
       .select()
       .from(products)
       .where(
-        and(
-          eq(products.id, id),
-          eq(products.userId, currentUser.userId)
-        )
+        and(eq(products.id, id), eq(products.userId, String(currentUser.id)))
       )
       .limit(1);
 
     if (!product) {
       return NextResponse.json(
-        { error: 'Product not found or unauthorized' },
+        { error: "Product not found or unauthorized" },
         { status: 404 }
       );
     }
 
-    await db
-      .delete(products)
-      .where(eq(products.id, id));
+    await db.delete(products).where(eq(products.id, id));
 
     return NextResponse.json({
       success: true,
-      message: 'Product deleted successfully',
+      message: "Product deleted successfully",
     });
   } catch (error) {
-    console.error('Delete product error:', error);
+    console.error("Delete product error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

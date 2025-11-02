@@ -1,12 +1,15 @@
-'use client';
-
-// src/context/AuthContext.tsx
-// Context API for user authentication state (subscription fields commented out)
-
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+"use client";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 interface User {
-  id: string;
+  id: number; // database primary key
+  userId: string;
   name: string;
   email: string;
   phone: string;
@@ -38,13 +41,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchCurrentUser = async () => {
     try {
-      const res = await fetch('/api/auth/me');
+      const res = await fetch("/api/auth/me");
       if (res.ok) {
         const data = await res.json();
         setUser(data.user);
       }
     } catch (error) {
-      console.error('Error fetching user:', error);
+      console.error("Error fetching user:", error);
     } finally {
       setLoading(false);
     }
@@ -52,10 +55,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch("/api/auth/logout", { method: "POST" });
       setUser(null);
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     }
   };
 
@@ -70,7 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within AuthProvider');
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
 }

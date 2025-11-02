@@ -1,35 +1,32 @@
 // src/app/api/admin/products/route.ts
 // Get all products for admin (NO CHANGES NEEDED - no subscription code)
 
-import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { products, users, categories } from '@/db/schema';
-import { getCurrentUser } from '@/lib/auth';
-import { eq, desc } from 'drizzle-orm';
+import { NextResponse } from "next/server";
+import { db } from "@/db";
+import { products, users, categories } from "@/db/schema";
+import { getCurrentUser } from "@/lib/auth";
+import { eq, desc } from "drizzle-orm";
 
-const ADMIN_EMAILS = ['udayveerus348566@gmail.com'];
+const ADMIN_EMAILS = ["udayveerus348566@gmail.com"];
 
 export async function GET() {
   try {
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check admin
     const [user] = await db
       .select({ email: users.email })
       .from(users)
-      .where(eq(users.id, currentUser.userId))
+      .where(eq(users.id, currentUser.id))
       .limit(1);
 
     if (!user || !ADMIN_EMAILS.includes(user.email)) {
       return NextResponse.json(
-        { error: 'Admin access required' },
+        { error: "Admin access required" },
         { status: 403 }
       );
     }
@@ -67,9 +64,9 @@ export async function GET() {
 
     return NextResponse.json({ products: productsWithImages });
   } catch (error) {
-    console.error('Get products error:', error);
+    console.error("Get products error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
