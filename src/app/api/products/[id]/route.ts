@@ -63,11 +63,14 @@ export async function PUT(
       );
     }
 
+    // Convert user ID to string for comparison (products.userId is stored as string)
+    const userIdString = String(currentUser.id);
+
     const [product] = await db
       .select()
       .from(products)
       .where(
-        and(eq(products.id, id), eq(products.userId, String(currentUser.id)))
+        and(eq(products.id, id), eq(products.userId, userIdString))
       )
       .limit(1);
 
@@ -120,11 +123,14 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Convert user ID to string for comparison (products.userId is stored as string)
+    const userIdString = String(currentUser.id);
+
     const [product] = await db
       .select()
       .from(products)
       .where(
-        and(eq(products.id, id), eq(products.userId, String(currentUser.id)))
+        and(eq(products.id, id), eq(products.userId, userIdString))
       )
       .limit(1);
 

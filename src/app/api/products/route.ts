@@ -4,7 +4,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { products, users, categories } from '@/db/schema';
-import { eq, and, gte, lte, ilike, or, desc, asc, count, sql } from 'drizzle-orm';
+import { eq, and, gte, lte, ilike, or, desc, asc, count } from 'drizzle-orm';
 
 export async function GET(request: Request) {
   try {
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     // Get query parameters
     const search = searchParams.get('search') || '';
     const categoryId = searchParams.get('categoryId');
-    const category = searchParams.get('category'); // Alternative category param
+    const category = searchParams.get('category');
     const subcategory = searchParams.get('subcategory');
     const city = searchParams.get('city');
     const state = searchParams.get('state');
@@ -24,26 +24,8 @@ export async function GET(request: Request) {
     const limit = parseInt(searchParams.get('limit') || '12'); // Changed to 12 for better grid display
     const offset = (page - 1) * limit;
 
-    // Debug logging
-    console.log('Products API - Query params:', {
-      search,
-      categoryId,
-      category,
-      subcategory,
-      city,
-      state,
-      minPrice,
-      maxPrice,
-      sortBy,
-      page,
-      limit
-    });
-
-    // Build where conditions
-    const conditions = [];
-    
-    // Only show active products
-    conditions.push(eq(products.status, 'ACTIVE'));
+    // Build where conditions - ALWAYS initialize with ACTIVE status check
+    const conditions: any[] = [eq(products.status, 'ACTIVE')];
 
     // Search in title and description (case-insensitive)
     if (search && search.trim() !== '') {
@@ -51,7 +33,7 @@ export async function GET(request: Request) {
         or(
           ilike(products.title, `%${search}%`),
           ilike(products.description, `%${search}%`)
-        )!
+        )
       );
     }
 
@@ -61,11 +43,6 @@ export async function GET(request: Request) {
     } else if (category) {
       conditions.push(eq(products.categoryId, category));
     }
-
-    // Filter by subcategory
-    // if (subcategory) {
-    //   conditions.push(eq(products.subcategoryId, subcategory));
-    // }
 
     // Filter by location (case-insensitive)
     if (city && city !== '') {
@@ -99,8 +76,8 @@ export async function GET(request: Request) {
         break;
     }
 
-    // Get products with user, category and subcategory data
-    const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
+    // Build WHERE clause - will always have at least ACTIVE status filter
+    const whereClause = and(...conditions);
     
     const productsList = await db
       .select({
@@ -131,17 +108,10 @@ export async function GET(request: Request) {
           name: categories.name,
           slug: categories.slug,
         },
-        // Subcategory info (if you have subcategories table)
-        // subcategory: {
-        //   id: subcategories.id,
-        //   name: subcategories.name,
-        //   slug: subcategories.slug,
-        // },
       })
       .from(products)
       .leftJoin(users, eq(products.userId, users.id))
       .leftJoin(categories, eq(products.categoryId, categories.id))
-      // .leftJoin(subcategories, eq(products.subcategoryId, subcategories.id))
       .where(whereClause)
       .orderBy(orderByClause)
       .limit(limit)

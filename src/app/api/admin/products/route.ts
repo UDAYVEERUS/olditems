@@ -1,5 +1,5 @@
 // src/app/api/admin/products/route.ts
-// Get all products for admin (NO CHANGES NEEDED - no subscription code)
+// Get all products for admin
 
 import { NextResponse } from "next/server";
 import { db } from "@/db";
@@ -14,10 +14,13 @@ export async function GET() {
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
-    // Check admin
+    // Check admin status - currentUser.id is a number, users.id is also a number
     const [user] = await db
       .select({ email: users.email })
       .from(users)
@@ -52,7 +55,7 @@ export async function GET() {
         },
       })
       .from(products)
-      .leftJoin(users, eq(products.userId, users.id))
+      .leftJoin(users, eq(products.userId, String(users.id)))
       .leftJoin(categories, eq(products.categoryId, categories.id))
       .orderBy(desc(products.createdAt));
 

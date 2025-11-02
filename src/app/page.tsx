@@ -7,6 +7,15 @@ import ProductCard from '@/components/ProductCard';
 import { Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
+interface Seller {
+  id?: string;
+  name?: string;
+  phone: string;
+  email?: string;
+  city?: string;
+  state?: string;
+}
+
 interface Product {
   id: string;
   title: string;
@@ -14,21 +23,17 @@ interface Product {
   images: string[];
   city: string;
   state: string;
-  seller?: {
-    id: string;
-    name: string;
-    phone: string;
-    email?: string;
-    city?: string;
-    state?: string;
-  };
-  user?: {
-    id: string;
-    name: string;
-    phone: string;
-    city?: string;
-    state?: string;
-  };
+  views?: number;
+  seller?: Seller;
+  user?: Seller;
+}
+
+interface PaginationInfo {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+  hasMore: boolean;
 }
 
 export default function HomePage() {
@@ -39,16 +44,21 @@ export default function HomePage() {
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    fetchProducts();
-  }, [searchQuery, selectedCategory, page]);
+    setPage(1); // Reset to page 1 when search or category changes
+    fetchProducts(1);
+  }, [searchQuery, selectedCategory]);
 
-  const fetchProducts = async () => {
+  useEffect(() => {
+    fetchProducts(page);
+  }, [page]);
+
+  const fetchProducts = async (pageNum: number) => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
-        page: page.toString(),
+        page: pageNum.toString(),
         limit: '20',
-        sortBy: 'latest', // Default sort
+        sortBy: 'latest',
       });
 
       if (searchQuery) params.append('search', searchQuery);
@@ -61,12 +71,21 @@ export default function HomePage() {
         throw new Error(data.error || 'Failed to fetch products');
       }
 
-      setProducts(data.products || []);
+      // Ensure products array exists and normalize each product
+      const normalizedProducts = (data.products || []).map((product: any) => ({
+        ...product,
+        // Ensure images is always an array
+        images: Array.isArray(product.images) ? product.images : [],
+        // Normalize seller field - use seller if available, otherwise user
+        seller: product.seller || product.user || null,
+      }));
+
+      setProducts(normalizedProducts);
       setTotalPages(data.pagination?.totalPages || 1);
     } catch (error) {
       console.error('Error fetching products:', error);
-      toast.error('Failed to load products');
-      setProducts([]); // Set empty array on error
+      toast.error(error instanceof Error ? error.message : 'Failed to load products');
+      setProducts([]);
     } finally {
       setLoading(false);
     }
@@ -81,52 +100,52 @@ export default function HomePage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-4">
-      <div className="mb-6">
-        <h1 className="text-xl sm:text-3xl font-bold mb-2 text-center">
+    <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* Header Section */}
+      <div className="mb-8">
+        <h1 className="text-2xl sm:text-4xl font-bold mb-2">
           {searchQuery ? `Search results for "${searchQuery}"` : 'Browse Products'}
         </h1>
-        <p className="text-gray-600 text-center">
-          {products.length} products found
+        <p className="text-gray-600">
+          {products.length > 0 ? `${products.length} products found` : 'No products found'}
         </p>
       </div>
 
+      {/* Products Grid or Empty State */}
       {products.length === 0 ? (
         <div className="text-center py-12">
-          <p className="text-xl text-gray-600">No products found</p>
-          <p className="text-gray-500 mt-2">Try adjusting your search or filters</p>
+          <p className="text-xl text-gray-600 mb-2">No products found</p>
+          <p className="text-gray-500">Try adjusting your search or filters</p>
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+          {/* Products Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
             {products.map((product) => (
               <ProductCard 
                 key={product.id} 
-                product={{
-                  ...product,
-                  // Normalize to always have seller field
-                  seller: product.seller || product.user
-                }} 
+                product={product}
               />
             ))}
           </div>
 
+          {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex justify-center gap-2 mt-8">
+            <div className="flex justify-center items-center gap-4 mt-8">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
               >
                 Previous
               </button>
-              <span className="px-4 py-2">
+              <span className="px-4 py-2 text-gray-700 font-medium">
                 Page {page} of {totalPages}
               </span>
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="px-4 py-2 border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100"
+                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
               >
                 Next
               </button>
