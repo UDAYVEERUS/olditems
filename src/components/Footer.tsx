@@ -14,7 +14,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           {/* About Section */}
           <div>
-            <img src="logo.png" width={100} height={100} alt='Logo' className='mb-4' />
+            <img src="logo.png" width={100} height={100} alt='Logo' className='mb-4 bg-white p-2' />
             <p className="text-sm text-white mb-4">
               India's trusted marketplace for buying and selling products. Connect with millions of buyers 
               and sellers nationwide.
