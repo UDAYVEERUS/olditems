@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { users } from '@/db/schema';
 import { hashPassword, generateToken, setAuthCookie } from '@/lib/auth';
-import { eq, or, sql } from 'drizzle-orm';
+import { eq, or } from 'drizzle-orm';
 
 export async function POST(request: Request) {
   try {
@@ -40,48 +40,60 @@ export async function POST(request: Request) {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Generate unique ID
-    const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Generate unique formatted user ID (for user_id field)
+    const uniqueUserId = `U${Date.now().toString().slice(-6)}${Math.random().toString(36).substr(2, 3).toUpperCase()}`;
 
-    // Use raw SQL to avoid Drizzle adding default columns
-    await db.execute(sql`
-      INSERT INTO users (
-        id, name, email, phone, password, city, state, pincode, 
-        latitude, longitude, is_verified
-      ) VALUES (
-        ${userId}, ${name}, ${email}, ${phone}, ${hashedPassword},
-        ${city}, ${state}, ${pincode}, ${latitude || 0}, ${longitude || 0}, true
-      )
-    `);
+    // Insert new user using Drizzle ORM properly
+    const [insertResult] = await db.insert(users).values({
+      userId: uniqueUserId, // This is the formatted readable ID
+      name,
+      email,
+      phone,
+      password: hashedPassword,
+      city,
+      state,
+      pincode,
+      latitude: latitude || null,
+      longitude: longitude || null,
+      isVerified: false, // Default value
+    });
 
-    // Fetch created user
+    // Fetch the created user with auto-generated id
     const [newUser] = await db
       .select({
-        id: users.id,
+        id: users.id, // Auto-increment ID (number)
+        userId: users.userId, // Formatted readable ID (string)
         name: users.name,
         email: users.email,
         phone: users.phone,
         city: users.city,
+        state: users.state,
         // ==================== SUBSCRIPTION FIELD (COMMENTED OUT) ====================
         // subscriptionStatus: users.subscriptionStatus,
         // ==================== END SUBSCRIPTION FIELD ====================
       })
       .from(users)
-      .where(eq(users.id, userId));
+      .where(eq(users.userId, uniqueUserId)); // Query by userId field
 
-    // Generate token
-    const token = generateToken(newUser.id);
+    // Generate token using the numeric id directly (no toString())
+    const token = generateToken(newUser.id); // Pass number directly
+    
+    // Set auth cookie
     await setAuthCookie(token);
 
     return NextResponse.json({
       success: true,
-      user: newUser,
+      user: {
+        ...newUser,
+        // Send formatted userId to frontend for display
+        displayId: newUser.userId,
+      },
       token,
     });
   } catch (error) {
     console.error('Signup error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   }

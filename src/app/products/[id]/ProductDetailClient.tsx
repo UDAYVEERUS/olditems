@@ -33,7 +33,7 @@ interface Product {
   pincode: string;
   createdAt: string;
   user: {
-    id: string;
+    id: string; // This comes from database as string
     name: string;
     phone: string;
     city: string;
@@ -131,7 +131,8 @@ export default function ProductDetailClient({ productId }: { productId: string }
     return null;
   }
 
-  const isOwnProduct = user?.id === product.user.id;
+  // Compare IDs: user.id is number, product.user.id is string
+  const isOwnProduct = user && String(user.id) === product.user.id;
   const isSold = product.status === 'SOLD';
 
   return (
@@ -139,7 +140,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
       {/* Back Button */}
       <button
         onClick={() => router.back()}
-        className="flex items-center gap-2 text-gray-600 hover:text-gray-800 mb-4"
+        className="flex items-center gap-2 cursor-pointer text-gray-600 hover:text-gray-800 mb-4"
       >
         <ArrowLeft size={20} />
         <span>Back</span>
@@ -234,12 +235,12 @@ export default function ProductDetailClient({ productId }: { productId: string }
           <div className="space-y-3 pt-4">
             {isOwnProduct ? (
               <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-blue-700 text-center">
+                <p className="text-blue-700 text-center font-medium mb-3">
                   This is your product. Manage it from your dashboard.
                 </p>
                 <button
                   onClick={() => router.push('/dashboard')}
-                  className="w-full mt-3 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+                  className="w-full cursor-pointer py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
                 >
                   Go to Dashboard
                 </button>
@@ -250,7 +251,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
                   <button
                     onClick={handleCallSeller}
                     disabled={isSold}
-                    className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium text-lg"
+                    className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium text-lg transition-colors"
                   >
                     <Phone size={20} />
                     Show Phone Number
@@ -258,7 +259,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
                 ) : (
                   <a
                     href={`tel:${product.user.phone}`}
-                    className="block w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-green-700 text-center font-medium text-lg"
+                    className="block w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-center font-medium text-lg transition-colors"
                   >
                     <div className="flex items-center justify-center gap-2">
                       <Phone size={20} />
@@ -269,7 +270,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
 
                 <button
                   onClick={handleShare}
-                  className="w-full py-3 border border-gray-400 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-2 font-medium"
+                  className="w-full py-3 border border-gray-400 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-2 font-medium transition-colors"
                 >
                   <Share2 size={20} />
                   Share Product

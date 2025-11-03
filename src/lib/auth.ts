@@ -18,18 +18,19 @@ export async function comparePassword(password: string, hash: string): Promise<b
 }
 
 // Generate JWT token
-export function generateToken(userId: string): string {
-  return jwt.sign({ userId }, JWT_SECRET, { expiresIn: '30d' });
+export function generateToken(id: number): string {
+  return jwt.sign({ id }, JWT_SECRET, { expiresIn: '30d' });
 }
 
 // Verify JWT token
-export function verifyToken(token: string): { userId: string } | null {
+export function verifyToken(token: string): { id: number } | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as { userId: string };
+    return jwt.verify(token, JWT_SECRET) as { id: number };
   } catch {
     return null;
   }
 }
+
 
 // Get current user from cookies (server-side)
 export async function getCurrentUser() {

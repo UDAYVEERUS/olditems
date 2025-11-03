@@ -1,11 +1,11 @@
 // src/app/api/products/[id]/edit/route.ts
 // Get product for editing (must be owner)
 
-import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { products, categories } from '@/db/schema';
-import { getCurrentUser } from '@/lib/auth';
-import { eq, and } from 'drizzle-orm';
+import { NextResponse } from "next/server";
+import { db } from "@/db";
+import { products, categories } from "@/db/schema";
+import { getCurrentUser } from "@/lib/auth";
+import { eq, and } from "drizzle-orm";
 
 export async function GET(
   request: Request,
@@ -16,10 +16,7 @@ export async function GET(
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get product (only if user owns it)
@@ -39,16 +36,13 @@ export async function GET(
       })
       .from(products)
       .where(
-        and(
-          eq(products.id, id),
-          eq(products.userId, currentUser.userId)
-        )
+        and(eq(products.id, id), eq(products.userId, currentUser.id.toString()))
       )
       .limit(1);
 
     if (!product) {
       return NextResponse.json(
-        { error: 'Product not found or unauthorized' },
+        { error: "Product not found or unauthorized" },
         { status: 404 }
       );
     }
@@ -61,9 +55,9 @@ export async function GET(
 
     return NextResponse.json({ product: productWithImages });
   } catch (error) {
-    console.error('Get product for edit error:', error);
+    console.error("Get product for edit error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

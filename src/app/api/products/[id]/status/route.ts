@@ -39,7 +39,7 @@ export async function PATCH(
       .where(
         and(
           eq(products.id, id),
-          eq(products.userId, currentUser.userId)
+eq(products.userId, currentUser.id.toString())
         )
       )
       .limit(1);

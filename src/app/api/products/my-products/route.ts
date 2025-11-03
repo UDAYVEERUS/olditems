@@ -39,7 +39,7 @@ export async function GET() {
       })
       .from(products)
       .leftJoin(categories, eq(products.categoryId, categories.id))
-      .where(eq(products.userId, currentUser.userId))
+.where(eq(products.userId, currentUser.id.toString()))
       .orderBy(desc(products.createdAt));
 
     // Parse images from JSON string
