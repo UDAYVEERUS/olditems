@@ -401,7 +401,7 @@ export default function Header() {
               {/* Mobile Sell Button */}
               <Link
                 href="/products/new"
-                className="flex items-center gap-1 px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm font-medium"
+                className="flex items-center gap-1 px-3 py-1.5 bg-[#F37A33] text-white rounded-lg text-sm font-medium"
               >
                 <Plus size={16} />
                 Sell
