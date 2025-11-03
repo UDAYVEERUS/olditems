@@ -290,7 +290,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
       </div>
 
       {/* Additional Details */}
-      <div className="mt-8 grid md:grid-cols-2 gap-6">
+      <div className="mt-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="font-semibold text-lg mb-3">Product Details</h3>
           <div className="space-y-2 text-sm">
@@ -315,7 +315,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        {/* <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="font-semibold text-lg mb-3">Ad Statistics</h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -331,7 +331,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
               <span className="font-medium">{product.user.name}</span>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

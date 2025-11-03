@@ -50,6 +50,7 @@ export default function Header() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+  const desktopSearchRef = useRef<HTMLDivElement>(null); // New ref for desktop search
   const userDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -62,6 +63,12 @@ export default function Header() {
       if (
         searchRef.current &&
         !searchRef.current.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+      if (
+        desktopSearchRef.current &&
+        !desktopSearchRef.current.contains(event.target as Node)
       ) {
         setShowSuggestions(false);
       }
@@ -95,7 +102,6 @@ export default function Header() {
     };
   }, [showMobileMenu, showSearchModal]);
 
-  // Fetch suggestions as user types
   // Fetch suggestions as user types
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -177,6 +183,7 @@ export default function Header() {
     const queryString = params.toString();
     router.push(`/products${queryString ? `?${queryString}` : ''}`);
   };
+  
   const handleLogout = async () => {
     await logout();
     setShowMobileMenu(false);
@@ -219,101 +226,103 @@ export default function Header() {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center space-x-4 flex-1 justify-end">
-              {/* Desktop Search Inline (responsive width with proper category dropdown) */}
-              <form
-                onSubmit={handleSearch}
-                className="flex items-center bg-gray-100 rounded-lg overflow-hidden border border-gray-300 max-w-xl w-full"
-              >
-                {/* Category Selector - Fixed width */}
-                <select
-                  value={selectedCategory || "all"}
-                  onChange={(e) => handleCategoryChange(e.target.value)}
-                  className="bg-gray-100 px-3 py-2 text-gray-700 border-r border-gray-300 focus:outline-none flex-shrink-0"
-                  style={{ minWidth: "100px", maxWidth: "120px" }}
+              {/* Desktop Search Inline - Wrapped in relative div */}
+              <div className="relative max-w-xl w-full" ref={desktopSearchRef}>
+                <form
+                  onSubmit={handleSearch}
+                  className="flex items-center bg-gray-100 rounded-lg overflow-hidden border border-gray-300"
                 >
-                  <option value="all">All</option>
-                  {categories.map((cat) => (
-                    <>
-                      {/* Parent category option */}
-                      <option key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </option>
-                      {/* Subcategories with indentation */}
-                      {cat.subCategories?.map((sub) => (
-                        <option key={sub.id} value={sub.id}>
-                          &nbsp;&nbsp;{sub.name}
-                        </option>
-                      ))}
-                    </>
-                  ))}
-                </select>
-
-                {/* Search Input - Takes remaining space */}
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={localSearch}
-                    onChange={(e) => setLocalSearch(e.target.value)}
-                    placeholder="Search products..."
-                    className="w-full px-3 py-2 bg-gray-100 focus:outline-none text-gray-700"
-                  />
-                  <button
-                    type="submit"
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 hover:text-blue-600"
+                  {/* Category Selector - Fixed width */}
+                  <select
+                    value={selectedCategory || "all"}
+                    onChange={(e) => handleCategoryChange(e.target.value)}
+                    className="bg-gray-100 px-3 py-2 text-gray-700 border-r border-gray-300 focus:outline-none flex-shrink-0"
+                    style={{ minWidth: "100px", maxWidth: "100px" }}
                   >
-                    <Search size={20} />
-                  </button>
+                    <option value="all">All</option>
+                    {categories.map((cat) => (
+                      <>
+                        {/* Parent category option */}
+                        <option key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </option>
+                        {/* Subcategories with indentation */}
+                        {cat.subCategories?.map((sub) => (
+                          <option key={sub.id} value={sub.id}>
+                            &nbsp;&nbsp;{sub.name}
+                          </option>
+                        ))}
+                      </>
+                    ))}
+                  </select>
 
-                  {/* Suggestions Dropdown */}
-                  {showSuggestions && (
-                    <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow-lg mt-1 z-50">
-                      {isLoadingSuggestions ? (
-                        <div className="p-3 text-sm text-gray-500 text-center">
-                          Loading...
-                        </div>
-                      ) : suggestions.length > 0 ? (
-                        suggestions.map((product) => {
-                          const productImage = getProductImage(product);
-                          return (
-                            <div
-                              key={product.id}
-                              onClick={() => handleSuggestionClick(product)}
-                              className="flex items-center gap-3 p-2 hover:bg-gray-50 cursor-pointer"
-                            >
-                              {productImage ? (
-                                <img
-                                  src={productImage}
-                                  alt={product.title}
-                                  className="w-10 h-10 object-cover rounded"
+                  {/* Search Input - Takes remaining space */}
+                  <div className="relative flex-1">
+                    <input
+                      type="text"
+                      value={localSearch}
+                      onChange={(e) => setLocalSearch(e.target.value)}
+                      placeholder="Search products..."
+                      className="w-full px-3 py-2 bg-gray-100 focus:outline-none text-gray-700"
+                    />
+                    <button
+                      type="submit"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-600 hover:text-blue-600"
+                    >
+                      <Search size={20} />
+                    </button>
+                  </div>
+                </form>
+
+                {/* Suggestions Dropdown - Positioned relative to wrapper */}
+                {showSuggestions && (
+                  <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-b-lg shadow-lg mt-1 z-50">
+                    {isLoadingSuggestions ? (
+                      <div className="p-3 text-sm text-gray-500 text-center">
+                        Loading...
+                      </div>
+                    ) : suggestions.length > 0 ? (
+                      suggestions.map((product) => {
+                        const productImage = getProductImage(product);
+                        return (
+                          <div
+                            key={product.id}
+                            onClick={() => handleSuggestionClick(product)}
+                            className="flex items-center gap-3 p-2 hover:bg-gray-50 cursor-pointer"
+                          >
+                            {productImage ? (
+                              <img
+                                src={productImage}
+                                alt={product.title}
+                                className="w-10 h-10 object-cover rounded"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-gray-200 flex items-center justify-center rounded">
+                                <Package
+                                  size={18}
+                                  className="text-gray-400"
                                 />
-                              ) : (
-                                <div className="w-10 h-10 bg-gray-200 flex items-center justify-center rounded">
-                                  <Package
-                                    size={18}
-                                    className="text-gray-400"
-                                  />
-                                </div>
-                              )}
-                              <div className="flex-1">
-                                <p className="text-gray-800 text-sm font-medium">
-                                  {product.title}
-                                </p>
-                                <p className="text-blue-600 text-sm font-semibold">
-                                  ₹{product.price.toLocaleString("en-IN")}
-                                </p>
                               </div>
+                            )}
+                            <div className="flex-1">
+                              <p className="text-gray-800 text-sm font-medium">
+                                {product.title}
+                              </p>
+                              <p className="text-blue-600 text-sm font-semibold">
+                                ₹{product.price.toLocaleString("en-IN")}
+                              </p>
                             </div>
-                          );
-                        })
-                      ) : (
-                        <div className="p-3 text-sm text-gray-500 text-center">
-                          No products found
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </form>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="p-3 text-sm text-gray-500 text-center">
+                        No products found
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* Sell Button */}
               <Link
@@ -330,7 +339,7 @@ export default function Header() {
                   <button
                     onClick={() => setShowUserDropdown(!showUserDropdown)}
                     className="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full hover:bg-blue-700 text-base font-semibold"
-                    title={user.name} // Tooltip shows full name on hover
+                    title={user.name}
                   >
                     {user.name?.charAt(0)?.toUpperCase() || "U"}
                   </button>
@@ -375,12 +384,6 @@ export default function Header() {
                   >
                     Login
                   </Link>
-                  {/* <Link
-                    href="/signup"
-                    className="px-2 py-2 w-full bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                  >
-                    Sign Up
-                  </Link> */}
                 </div>
               )}
             </div>
@@ -420,7 +423,7 @@ export default function Header() {
       {showMobileMenu && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
-            className="fixed inset-0 bg-gray-100 bg-opacity-10"
+            className="fixed inset-0 bg-white bg-opacity-30 opacity-60"
             onClick={() => setShowMobileMenu(false)}
           />
 
@@ -499,13 +502,6 @@ export default function Header() {
                     >
                       Login
                     </Link>
-                    {/* <Link
-                      href="/signup"
-                      className="block px-3 py-2 text-center bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                      onClick={() => setShowMobileMenu(false)}
-                    >
-                      Sign Up
-                    </Link> */}
                   </div>
                 )}
               </nav>
@@ -538,25 +534,6 @@ export default function Header() {
               </div>
 
               <form onSubmit={handleSearch} className="space-y-4">
-                {/* Category Selector */}
-                {/* <select
-                  value={selectedCategory || "all"}
-                  onChange={(e) => handleCategoryChange(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="all">All Categories</option>
-                  {categories.map((cat) => (
-                    <optgroup key={cat.id} label={cat.name}>
-                      <option value={cat.id}>{cat.name}</option>
-                      {cat.subCategories?.map((sub) => (
-                        <option key={sub.id} value={sub.id}>
-                          &nbsp;&nbsp;{sub.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select> */}
-
                 {/* Search Input */}
                 <div className="relative">
                   <input
