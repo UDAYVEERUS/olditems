@@ -28,7 +28,7 @@ export default function RootLayout({
         <AuthProvider>
           <SearchProvider>
             <Header />
-            <main className="min-h-screen bg-gray-50">
+            <main className="bg-gray-50">
               {children}
             </main>
             <Toaster position="top-right" />

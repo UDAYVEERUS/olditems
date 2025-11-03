@@ -43,7 +43,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     <Link href={`/products/${product.id}`}>
       <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
         {/* Product Image */}
-        <div className="relative h-48 bg-gray-200">
+        <div className="relative h-48 sm:h-60 bg-gray-200">
           {product.images && product.images[0] ? (
             <Image
               src={product.images[0]}
