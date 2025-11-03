@@ -7,6 +7,7 @@ import Pagination from '@/components/Pagination';
 import EmptyState from '@/components/EmptyState';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import toast from 'react-hot-toast';
+import HeroSection from '@/components/HeroSection';
 
 interface Seller {
   id?: string;
@@ -89,30 +90,33 @@ export default function HomePage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      {/* Header Section */}
-      <div className="mb-8">
-        <h1 className="text-2xl sm:text-4xl font-bold mb-2">
-          {searchQuery ? `Search results for "${searchQuery}"` : 'Browse Products'}
-        </h1>
-        <p className="text-gray-600">
-          {products.length > 0 ? `${products.length} products found` : 'No products found'}
-        </p>
-      </div>
+    <>
+      <HeroSection />
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header Section */}
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-4xl font-bold mb-2">
+            {searchQuery ? `Search results for "${searchQuery}"` : 'Browse Products'}
+          </h1>
+          <p className="text-gray-600">
+            {products.length > 0 ? `${products.length} products found` : 'No products found'}
+          </p>
+        </div>
 
-      {/* Products or Empty State */}
-      {products.length === 0 ? (
-        <EmptyState />
-      ) : (
-        <>
-          <ProductsGrid products={products} />
-          <Pagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-          />
-        </>
-      )}
-    </div>
+        {/* Products or Empty State */}
+        {products.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <>
+            <ProductsGrid products={products} />
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+            />
+          </>
+        )}
+      </div>
+    </>
   );
 }
