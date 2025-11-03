@@ -94,7 +94,7 @@ export default function HomePage() {
       <HeroSection />
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header Section */}
-        <div className="mb-8">
+        <div className="mb-8 sm:text-left text-center">
           <h1 className="text-2xl sm:text-4xl font-bold mb-2">
             {searchQuery ? `Search results for "${searchQuery}"` : 'Browse Products'}
           </h1>

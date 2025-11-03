@@ -9,15 +9,15 @@ interface HeroSectionProps {
 export default function HeroSection({ className = '' }: HeroSectionProps) {
     return (
         <section className={`relative bg-[#54CEBD] text-white ${className}`}>
-            <div className="lg:px-8 py-14">
+            <div className="lg:px-8 py-20">
                 <div className="text-center">
                     {/* Main Heading */}
-                    <h1 className="text-xl md:text-4xl font-bold mb-6 leading-tight">
+                    <h1 className="text-2xl md:text-4xl font-bold mb-6 leading-tight">
                         Buy & Sell Your Old Products
                         <span className="block text-white">With Ease</span>
                     </h1>
                     {/* CTA Buttons */}
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                    <div className="flex flex-row gap-4 justify-center">
                         <Link
                             href="/products/new"
                             className="bg-[#F37A33] text-white px-4 py-2 rounded-lg text-lg transition-colors shadow-lg"
