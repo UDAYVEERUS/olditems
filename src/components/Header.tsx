@@ -202,10 +202,10 @@ export default function Header() {
     <>
       <header className="bg-white shadow-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-24">
             {/* Logo */}
             <Link href="/" className="flex-shrink-0">
-              <Image src="/logo.png" height={50} width={50} alt="logo" />
+              <Image src="/logo.png" height={80} width={80} alt="logo" />
             </Link>
 
             {/* Desktop Navigation */}
