@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     siteName: "Olditems.in",
     images: [
       {
-        url: "https://www.olditems.in/logo.png", // 👈 Replace with your real OG image path
+        url: "https://www.olditems.in/logo.png",
         width: 1200,
         height: 630,
         alt: "Olditems.in - Buy & Sell Used Products",
@@ -42,7 +42,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Olditems.in - Buy & Sell Used Products Online",
+    title: "Olditems - Buy & Sell Used Products Online",
     description:
       "India’s easiest way to buy and sell second-hand goods. Post your ad today for free!",
     images: ["https://www.olditems.in/logo.png"],
