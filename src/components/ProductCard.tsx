@@ -43,7 +43,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     <Link href={`/products/${product.id}`}>
       <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer">
         {/* Product Image */}
-        <div className="relative h-48 bg-gray-200">
+        <div className="relative h-48 sm:h-60 bg-gray-200">
           {product.images && product.images[0] ? (
             <Image
               src={product.images[0]}
@@ -61,11 +61,11 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Product Details */}
         <div className="p-4">
-          <h3 className="font-semibold text-sm sm:text-lg line-clamp-2 hover:text-blue-600">
+          <h3 className="font-semibold text-sm sm:text-lg line-clamp-2 hover:text-[#E06B2D]">
             {product.title}
           </h3>
 
-          <p className="text-lg sm:text-2xl font-bold text-blue-600">
+          <p className="text-lg sm:text-2xl font-bold text-[#E06B2D]">
             ₹{product.price.toLocaleString('en-IN')}
           </p>
 

@@ -79,36 +79,36 @@ export default function PrivacyPolicy() {
     {
       icon: Mail,
       title: 'Email',
-      value: 'support@marketplace.com',
-      link: 'mailto:support@marketplace.com',
+      value: 'olditemss@gmail.com',
+      link: 'mailto:olditemss@gmail.com',
     },
     {
       icon: Phone,
       title: 'Phone',
-      value: '+91 (800) 123-4567',
-      link: 'tel:+918001234567',
+      value: '+91 9838824898',
+      link: 'tel:+919838824898',
     },
-    {
-      icon: MapPin,
-      title: 'Address',
-      value: 'Gurugram, Haryana, India',
-      link: '#',
-    },
+    // {
+    //   icon: MapPin,
+    //   title: 'Address',
+    //   value: 'Gurugram, Haryana, India',
+    //   link: '#',
+    // },
   ];
 
   return (
     <div className="bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12">
+      <div className="bg-[#54CEBD] text-white py-12">
         <div className="max-w-4xl mx-auto px-4">
           <div className="flex items-center gap-3 mb-4">
             <Shield size={32} />
             <h1 className="text-4xl font-bold">Privacy Policy</h1>
           </div>
-          <p className="text-blue-100">
+          <p className="text-white">
             Your privacy is important to us. This page explains how we collect, use, and protect your information.
           </p>
-          <p className="text-blue-200 text-sm mt-4">
+          <p className="text-white text-sm mt-4">
             Last updated: <span className="font-semibold">{lastUpdated}</span>
           </p>
         </div>
@@ -124,7 +124,7 @@ export default function PrivacyPolicy() {
               <a
                 key={index}
                 href={`#section-${index}`}
-                className="text-blue-600 hover:text-blue-700 text-sm p-2 rounded hover:bg-blue-50 transition-colors"
+                className="text-[#E06B2D] hover:text-blue-700 text-sm p-2 rounded hover:bg-blue-50 transition-colors"
               >
                 • {section.title}
               </a>
@@ -143,7 +143,7 @@ export default function PrivacyPolicy() {
               {/* Section Title */}
               <div className="flex items-start gap-4 mb-4">
                 <div className="bg-blue-100 rounded-lg p-3 flex-shrink-0">
-                  <div className="w-6 h-6 bg-blue-600 rounded flex items-center justify-center text-white text-sm font-bold">
+                  <div className="w-6 h-6 bg-[#E06B2D] rounded flex items-center justify-center text-white text-sm font-bold">
                     {index + 1}
                   </div>
                 </div>
@@ -161,7 +161,7 @@ export default function PrivacyPolicy() {
                   <ul className="space-y-3">
                     {section.subsections.map((subsection, idx) => (
                       <li key={idx} className="flex items-start gap-3">
-                        <span className="text-blue-600 font-bold mt-1">✓</span>
+                        <span className="text-[#E06B2D] font-bold mt-1">✓</span>
                         <span className="text-gray-700">{subsection}</span>
                       </li>
                     ))}
@@ -181,7 +181,7 @@ export default function PrivacyPolicy() {
             We will promptly correct any information found to be incorrect.
           </p>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 gap-6">
             {contactMethods.map((method, index) => {
               const Icon = method.icon;
               return (
@@ -191,10 +191,10 @@ export default function PrivacyPolicy() {
                   className="bg-white rounded-lg p-4 hover:shadow-md transition-shadow"
                 >
                   <div className="flex items-center gap-3 mb-2">
-                    <Icon className="text-blue-600" size={24} />
+                    <Icon className="text-black" size={24} />
                     <h3 className="font-semibold text-gray-900">{method.title}</h3>
                   </div>
-                  <p className="text-blue-600 hover:text-blue-700 text-sm break-all">
+                  <p className="text-black text-sm break-all">
                     {method.value}
                   </p>
                 </a>

@@ -92,21 +92,21 @@ export default function Footer() {
             <div className="flex gap-4 mb-4">
               <a 
                 href="#" 
-                className="bg-gray-800 hover:bg-blue-600 p-2 rounded-lg transition-colors"
+                className="bg-gray-800 hover:bg-[#E06B2D] p-2 rounded-lg transition-colors"
                 aria-label="Facebook"
               >
                 <Facebook size={20} />
               </a>
               <a 
                 href="#" 
-                className="bg-gray-800 hover:bg-blue-600 p-2 rounded-lg transition-colors"
+                className="bg-gray-800 hover:bg-[#E06B2D] p-2 rounded-lg transition-colors"
                 aria-label="Twitter"
               >
                 <Twitter size={20} />
               </a>
               <a 
                 href="#" 
-                className="bg-gray-800 hover:bg-blue-600 p-2 rounded-lg transition-colors"
+                className="bg-gray-800 hover:bg-[#E06B2D] p-2 rounded-lg transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram size={20} />

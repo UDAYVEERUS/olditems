@@ -25,7 +25,7 @@ interface Product {
   };
 }
 
-interface Props {
+interface Props { 
   product: Product;
   onUpdate: () => void;
 }
@@ -189,7 +189,7 @@ export default function DashboardProductCard({ product, onUpdate }: Props) {
           {product.title}
         </h3>
 
-        <p className="text-2xl font-bold text-blue-600 mb-2">
+        <p className="text-2xl font-bold text-[#E06B2D] mb-2">
           ₹{product.price.toLocaleString('en-IN')}
         </p>
 

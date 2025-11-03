@@ -122,7 +122,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <Loader2 className="animate-spin text-blue-600" size={48} />
+        <Loader2 className="animate-spin text-[#E06B2D]" size={48} />
       </div>
     );
   }
@@ -137,7 +137,7 @@ export default function DashboardPage() {
         </div>
         <button
           onClick={() => router.push('/products/new')}
-          className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+          className="w-full sm:w-auto px-4 py-2 bg-[#E06B2D] text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
         >
           <Plus size={20} />
           List Product
@@ -187,7 +187,7 @@ export default function DashboardPage() {
             ) : (
               <button
                 onClick={() => router.push('/subscription')}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium whitespace-nowrap"
+                className="px-4 py-2 bg-[#E06B2D] text-white rounded-lg hover:bg-blue-700 text-sm font-medium whitespace-nowrap"
               >
                 Subscribe
               </button>
@@ -223,7 +223,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="bg-white p-4 rounded-lg shadow-md">
-          <div className="flex items-center gap-2 text-blue-600 mb-1">
+          <div className="flex items-center gap-2 text-[#E06B2D] mb-1">
             <Eye size={18} />
             <span className="text-sm">Views</span>
           </div>
@@ -245,7 +245,7 @@ export default function DashboardPage() {
           onClick={() => setActiveTab('all')}
           className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${
             activeTab === 'all'
-              ? 'bg-blue-600 text-white'
+              ? 'bg-[#E06B2D] text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
         >
@@ -255,7 +255,7 @@ export default function DashboardPage() {
           onClick={() => setActiveTab('active')}
           className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${
             activeTab === 'active'
-              ? 'bg-blue-600 text-white'
+              ? 'bg-[#E06B2D] text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
         >
@@ -265,7 +265,7 @@ export default function DashboardPage() {
           onClick={() => setActiveTab('sold')}
           className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${
             activeTab === 'sold'
-              ? 'bg-blue-600 text-white'
+              ? 'bg-[#E06B2D] text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
         >
@@ -285,7 +285,7 @@ export default function DashboardPage() {
           </p>
           <button
             onClick={() => router.push('/products/new')}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 inline-flex items-center gap-2"
+            className="px-6 py-2 bg-[#E06B2D] text-white rounded-lg hover:bg-blue-700 inline-flex items-center gap-2"
           >
             <Plus size={20} />
             List Your First Product

@@ -131,13 +131,13 @@ export default function ProductsPage() {
     const urlCity = searchParams.get('city');
     
     if (urlSearch) return `Results for "${urlSearch}"`;
-    if (urlCategory) return `Products in ${urlCategory}`;
+    // if (urlCategory) return `Products in ${urlCategory}`;
     if (urlCity) return `Products in ${urlCity}`;
     return 'All Products';
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-auto bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -167,7 +167,7 @@ export default function ProductsPage() {
         {/* Products Grid */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            <Loader2 className="h-8 w-8 animate-spin text-[#E06B2D]" />
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg">
@@ -226,7 +226,7 @@ export default function ProductsPage() {
                           onClick={() => handlePageChange(pageNum)}
                           className={`px-4 py-2 rounded-lg transition-colors ${
                             pageNum === pagination.page
-                              ? 'bg-blue-600 text-white'
+                              ? 'bg-[#E06B2D] text-white'
                               : 'border border-gray-300 hover:bg-gray-50'
                           }`}
                         >

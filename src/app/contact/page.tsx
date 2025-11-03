@@ -111,10 +111,10 @@ export default function ContactPage() {
   return (
     <div className="bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
+      <div className="bg-[#54CEBD] text-white py-16">
         <div className="max-w-6xl mx-auto px-4">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Contact Us</h1>
-          <p className="text-lg text-blue-100">
+          <p className="text-lg text-white">
             We'd love to hear from you. Get in touch with our team.
           </p>
         </div>
@@ -200,7 +200,7 @@ export default function ContactPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2 transition-colors"
+                className="w-full bg-[#E06B2D] text-white py-3 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-semibold flex items-center justify-center gap-2 transition-colors"
               >
                 <Send size={18} />
                 {loading ? 'Sending...' : 'Send Message'}
@@ -226,7 +226,7 @@ export default function ContactPage() {
                     className="flex items-start gap-4 p-4 bg-white rounded-lg shadow-md hover:shadow-lg hover:bg-blue-50 transition-all"
                   >
                     <div className="bg-blue-100 p-3 rounded-lg flex-shrink-0">
-                      <Icon className="text-blue-600" size={24} />
+                      <Icon className="text-[#E06B2D]" size={24} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-gray-900">{info.title}</h3>

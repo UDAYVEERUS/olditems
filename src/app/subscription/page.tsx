@@ -78,7 +78,7 @@ export default function SubscriptionPage() {
   if (!user || checkingStatus) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <Loader2 className="animate-spin text-blue-600" size={48} />
+        <Loader2 className="animate-spin text-[#E06B2D]" size={48} />
       </div>
     );
   }
@@ -96,7 +96,7 @@ export default function SubscriptionPage() {
           </p>
           <button
             onClick={() => router.push('/products/new')}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium"
+            className="px-6 py-3 bg-[#E06B2D] text-white rounded-lg hover:bg-blue-700 font-medium"
           >
             List a Product
           </button>
@@ -118,7 +118,7 @@ export default function SubscriptionPage() {
         {/* Pricing Card */}
         <div className="border-2 border-blue-600 rounded-lg p-6 mb-6">
           <div className="text-center mb-4">
-            <div className="text-4xl font-bold text-blue-600 mb-1">₹10</div>
+            <div className="text-4xl font-bold text-[#E06B2D] mb-1">₹10</div>
             <div className="text-gray-600">per month</div>
           </div>
 
@@ -150,7 +150,7 @@ export default function SubscriptionPage() {
         <button
           onClick={handleSubscribe}
           disabled={loading}
-          className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-semibold text-lg"
+          className="w-full py-3 bg-[#E06B2D] text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-semibold text-lg"
         >
           {loading ? (
             <>

@@ -1,10 +1,10 @@
 // src/app/api/products/route.ts
-// Get products with filters using Drizzle ORM
+// Get products with filters using Drizzle ORM (MySQL compatible)
 
 import { NextResponse } from 'next/server';
 import { db } from '@/db';
 import { products, users, categories } from '@/db/schema';
-import { eq, and, gte, lte, ilike, or, desc, asc, count } from 'drizzle-orm';
+import { eq, and, gte, lte, like, or, desc, asc, count, sql } from 'drizzle-orm';
 
 export async function GET(request: Request) {
   try {
@@ -21,18 +21,19 @@ export async function GET(request: Request) {
     const maxPrice = searchParams.get('maxPrice');
     const sortBy = searchParams.get('sortBy') || 'latest'; // latest, price-low, price-high
     const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '12'); // Changed to 12 for better grid display
+    const limit = parseInt(searchParams.get('limit') || '12');
     const offset = (page - 1) * limit;
 
     // Build where conditions - ALWAYS initialize with ACTIVE status check
     const conditions: any[] = [eq(products.status, 'ACTIVE')];
 
-    // Search in title and description (case-insensitive)
+    // Search in title and description (case-insensitive using LOWER())
     if (search && search.trim() !== '') {
+      const searchLower = search.toLowerCase();
       conditions.push(
         or(
-          ilike(products.title, `%${search}%`),
-          ilike(products.description, `%${search}%`)
+          sql`LOWER(${products.title}) LIKE ${`%${searchLower}%`}`,
+          sql`LOWER(${products.description}) LIKE ${`%${searchLower}%`}`
         )
       );
     }
@@ -44,13 +45,15 @@ export async function GET(request: Request) {
       conditions.push(eq(products.categoryId, category));
     }
 
-    // Filter by location (case-insensitive)
+    // Filter by location (case-insensitive using LOWER())
     if (city && city !== '') {
-      conditions.push(ilike(products.city, `%${city}%`));
+      const cityLower = city.toLowerCase();
+      conditions.push(sql`LOWER(${products.city}) LIKE ${`%${cityLower}%`}`);
     }
     
     if (state && state !== '') {
-      conditions.push(ilike(products.state, `%${state}%`));
+      const stateLower = state.toLowerCase();
+      conditions.push(sql`LOWER(${products.state}) LIKE ${`%${stateLower}%`}`);
     }
 
     // Filter by price range
@@ -117,7 +120,7 @@ export async function GET(request: Request) {
       .limit(limit)
       .offset(offset);
 
-    console.log(`Found ${productsList.length} products for page ${page}`);
+    // console.log(`Found ${productsList.length} products for page ${page}`);
 
     // Parse images from JSON string if needed
     const productsWithImages = productsList.map((p) => ({
@@ -133,8 +136,6 @@ export async function GET(request: Request) {
       .select({ value: count() })
       .from(products)
       .where(whereClause);
-
-    console.log(`Total products matching criteria: ${total}`);
 
     // Calculate pagination info
     const totalPages = Math.ceil(total / limit);

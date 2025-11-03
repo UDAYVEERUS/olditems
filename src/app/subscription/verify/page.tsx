@@ -66,7 +66,7 @@ function VerifyContent() {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
         <div className="text-center">
-          <Loader2 className="animate-spin text-blue-600 mx-auto mb-4" size={48} />
+          <Loader2 className="animate-spin text-[#E06B2D] mx-auto mb-4" size={48} />
           <p className="text-gray-600">{message}</p>
         </div>
       </div>
@@ -94,7 +94,7 @@ function VerifyContent() {
         <p className="text-gray-600 mb-6">{message}</p>
         <button
           onClick={() => router.push('/subscription')}
-          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          className="px-6 py-3 bg-[#E06B2D] text-white rounded-lg hover:bg-blue-700"
         >
           Try Again
         </button>
@@ -108,7 +108,7 @@ function VerifyLoading() {
   return (
     <div className="flex justify-center items-center min-h-[60vh]">
       <div className="text-center">
-        <Loader2 className="animate-spin text-blue-600 mx-auto mb-4" size={48} />
+        <Loader2 className="animate-spin text-[#E06B2D] mx-auto mb-4" size={48} />
         <p className="text-gray-600">Verifying payment...</p>
       </div>
     </div>

@@ -44,10 +44,10 @@ export default function AboutPage() {
   return (
     <div className="bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-16">
+      <div className="bg-[#54CEBD] text-white py-16">
         <div className="max-w-6xl mx-auto px-4">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">About Us</h1>
-          <p className="text-lg text-blue-100">
+          <p className="text-lg text-white">
             Building India's most trusted marketplace for buying and selling products
           </p>
         </div>
@@ -77,7 +77,7 @@ export default function AboutPage() {
               const Icon = feature.icon;
               return (
                 <div key={index} className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-shadow">
-                  <Icon className="text-blue-600 mb-4" size={32} />
+                  <Icon className="text-[#E06B2D] mb-4" size={32} />
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">
                     {feature.title}
                   </h3>
@@ -91,19 +91,19 @@ export default function AboutPage() {
         </div>
 
         {/* Stats Section */}
-        <div className="bg-blue-50 py-12 px-6 rounded-lg mb-16">
+        <div className="bg-gray-50 py-12 px-6 rounded-lg mb-16">
           <h2 className="text-3xl font-bold mb-8 text-gray-900 text-center">By The Numbers</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <p className="text-4xl font-bold text-blue-600 mb-2">100K+</p>
+              <p className="text-4xl font-bold text-[#E06B2D] mb-2">100K+</p>
               <p className="text-gray-700">Products Listed</p>
             </div>
             <div className="text-center">
-              <p className="text-4xl font-bold text-blue-600 mb-2">50K+</p>
+              <p className="text-4xl font-bold text-[#E06B2D] mb-2">50K+</p>
               <p className="text-gray-700">Active Sellers</p>
             </div>
             <div className="text-center">
-              <p className="text-4xl font-bold text-blue-600 mb-2">500K+</p>
+              <p className="text-4xl font-bold text-[#E06B2D] mb-2">500K+</p>
               <p className="text-gray-700">Happy Users</p>
             </div>
           </div>
@@ -143,22 +143,22 @@ export default function AboutPage() {
                 <h3 className="text-2xl font-semibold text-gray-900 mb-1">
                   {member.name}
                 </h3>
-                <p className="text-blue-600 font-medium mb-3">{member.role}</p>
+                <p className="text-[#E06B2D] font-medium mb-3">{member.role}</p>
                 <p className="text-gray-600">{member.description}</p>
               </div>
             ))}
           </div>
-        </div> */}c
+        </div> */}
 
         {/* CTA Section */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white py-12 px-8 rounded-lg text-center">
+        <div className="bg-[#54CEBD] text-white py-12 px-8 rounded-lg text-center">
           <h2 className="text-3xl font-bold mb-4">Want to Learn More?</h2>
-          <p className="text-blue-100 mb-6 text-lg">
+          <p className="text-white mb-6 text-lg">
             Have questions? We'd love to hear from you. Get in touch with our team.
           </p>
           <Link
             href="/contact"
-            className="inline-block bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
+            className="inline-block bg-white text-black px-8 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors"
           >
             Contact Us
           </Link>

@@ -122,7 +122,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <Loader2 className="animate-spin text-blue-600" size={48} />
+        <Loader2 className="animate-spin text-[#E06B2D]" size={48} />
       </div>
     );
   }
@@ -170,7 +170,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
               {product.title}
             </h1>
             <div className="flex items-baseline gap-2">
-              <span className="text-3xl md:text-4xl font-bold text-blue-600">
+              <span className="text-3xl md:text-4xl font-bold text-[#E06B2D]">
                 ₹{product.price.toLocaleString('en-IN')}
               </span>
             </div>
@@ -209,7 +209,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
               {/* Phone Number - Always visible and clickable */}
               <a 
                 href={`tel:${product.user.phone}`}
-                className="flex items-center gap-2 text-gray-700 hover:text-blue-600"
+                className="flex items-center gap-2 text-gray-700 hover:text-[#E06B2D]"
               >
                 <Phone size={18} />
                 <span className="font-medium">{product.user.phone}</span>
@@ -240,7 +240,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
                 </p>
                 <button
                   onClick={() => router.push('/dashboard')}
-                  className="w-full cursor-pointer py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
+                  className="w-full cursor-pointer py-3 bg-[#E06B2D] text-white rounded-lg hover:bg-blue-700 font-medium transition-colors"
                 >
                   Go to Dashboard
                 </button>
@@ -251,7 +251,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
                   <button
                     onClick={handleCallSeller}
                     disabled={isSold}
-                    className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium text-lg transition-colors"
+                    className="w-full py-3 bg-[#E06B2D] text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium text-lg transition-colors"
                   >
                     <Phone size={20} />
                     Show Phone Number
@@ -290,7 +290,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
       </div>
 
       {/* Additional Details */}
-      <div className="mt-8 grid md:grid-cols-2 gap-6">
+      <div className="mt-8">
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="font-semibold text-lg mb-3">Product Details</h3>
           <div className="space-y-2 text-sm">
@@ -315,7 +315,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        {/* <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="font-semibold text-lg mb-3">Ad Statistics</h3>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
@@ -331,7 +331,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
               <span className="font-medium">{product.user.name}</span>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

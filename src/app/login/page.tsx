@@ -81,7 +81,7 @@ export default function LoginPage() {
             <div className="text-right mt-1">
               <Link
                 href="/forgot-password"
-                className="text-sm text-blue-600 hover:underline"
+                className="text-sm text-[#E06B2D] hover:underline"
               >
                 Forgot password?
               </Link>
@@ -91,7 +91,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-2 bg-[#E06B2D] text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -106,7 +106,7 @@ export default function LoginPage() {
 
         <p className="text-center mt-4 text-sm text-gray-600">
           Don't have an account?{' '}
-          <Link href="/signup" className="text-blue-600 hover:underline">
+          <Link href="/signup" className="text-[#E06B2D] hover:underline">
             Sign up
           </Link>
         </p>

@@ -75,7 +75,7 @@ export default function ForgotPasswordPage() {
             Didn't receive the email? Check your spam folder or{' '}
             <button
               onClick={() => setEmailSent(false)}
-              className="text-blue-600 hover:underline"
+              className="text-[#E06B2D] hover:underline"
             >
               try again
             </button>
@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
 
           <Link
             href="/login"
-            className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700"
+            className="inline-flex items-center gap-2 text-[#E06B2D] hover:text-blue-700"
           >
             <ArrowLeft size={16} />
             Back to Login
@@ -127,7 +127,7 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="w-full py-2 bg-[#E06B2D] text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -142,7 +142,7 @@ export default function ForgotPasswordPage() {
 
         <p className="text-center mt-4 text-sm text-gray-600">
           Remember your password?{' '}
-          <Link href="/login" className="text-blue-600 hover:underline">
+          <Link href="/login" className="text-[#E06B2D] hover:underline">
             Login
           </Link>
         </p>
