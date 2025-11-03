@@ -259,7 +259,7 @@ export default function ProductDetailClient({ productId }: { productId: string }
                 ) : (
                   <a
                     href={`tel:${product.user.phone}`}
-                    className="block w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 text-center font-medium text-lg transition-colors"
+                    className="block w-full py-3 bg-[#F37A33] text-white text-center font-medium text-lg transition-colors"
                   >
                     <div className="flex items-center justify-center gap-2">
                       <Phone size={20} />
