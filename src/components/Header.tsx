@@ -96,9 +96,11 @@ export default function Header() {
   }, [showMobileMenu, showSearchModal]);
 
   // Fetch suggestions as user types
+  // Fetch suggestions as user types
   useEffect(() => {
     const fetchSuggestions = async () => {
-      if (localSearch.length < 2) {
+      // Change from 2 to 3 characters minimum
+      if (localSearch.length < 3) {
         setSuggestions([]);
         setShowSuggestions(false);
         return;
@@ -158,11 +160,23 @@ export default function Header() {
   };
 
   const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategory(categoryId === "all" ? null : categoryId);
+    const newCategory = categoryId === "all" ? null : categoryId;
+    setSelectedCategory(newCategory);
     setShowSearchModal(false);
-    router.push("/products");
-  };
 
+    // Build query params for navigation
+    const params = new URLSearchParams();
+    if (newCategory) {
+      params.append('category', newCategory);
+    }
+    if (localSearch) {
+      params.append('search', localSearch);
+    }
+
+    // Navigate with query params
+    const queryString = params.toString();
+    router.push(`/products${queryString ? `?${queryString}` : ''}`);
+  };
   const handleLogout = async () => {
     await logout();
     setShowMobileMenu(false);
@@ -205,32 +219,36 @@ export default function Header() {
 
             {/* Desktop Actions */}
             <div className="hidden md:flex items-center space-x-4 flex-1 justify-end">
-              {/* Desktop Search Inline (clean fixed width) */}
+              {/* Desktop Search Inline (responsive width with proper category dropdown) */}
               <form
                 onSubmit={handleSearch}
-                className="flex items-center bg-gray-100 rounded-lg overflow-hidden border border-gray-300"
-                style={{ width: "420px" }}
+                className="flex items-center bg-gray-100 rounded-lg overflow-hidden border border-gray-300 max-w-xl w-full"
               >
-                {/* Category Selector */}
+                {/* Category Selector - Fixed width */}
                 <select
                   value={selectedCategory || "all"}
                   onChange={(e) => handleCategoryChange(e.target.value)}
-                  className="bg-gray-100 px-3 py-2 text-gray-700 border-r border-gray-300 focus:outline-none"
+                  className="bg-gray-100 px-3 py-2 text-gray-700 border-r border-gray-300 focus:outline-none flex-shrink-0"
+                  style={{ minWidth: "100px", maxWidth: "120px" }}
                 >
                   <option value="all">All</option>
                   {categories.map((cat) => (
-                    <optgroup key={cat.id} label={cat.name}>
-                      <option value={cat.id}>{cat.name}</option>
+                    <>
+                      {/* Parent category option */}
+                      <option key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </option>
+                      {/* Subcategories with indentation */}
                       {cat.subCategories?.map((sub) => (
                         <option key={sub.id} value={sub.id}>
                           &nbsp;&nbsp;{sub.name}
                         </option>
                       ))}
-                    </optgroup>
+                    </>
                   ))}
                 </select>
 
-                {/* Search Input */}
+                {/* Search Input - Takes remaining space */}
                 <div className="relative flex-1">
                   <input
                     type="text"
@@ -402,7 +420,7 @@ export default function Header() {
       {showMobileMenu && (
         <div className="fixed inset-0 z-50 md:hidden">
           <div
-            className="fixed inset-0 bg-black bg-opacity-50"
+            className="fixed inset-0 bg-gray-100 bg-opacity-10"
             onClick={() => setShowMobileMenu(false)}
           />
 
@@ -500,7 +518,7 @@ export default function Header() {
       {showSearchModal && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4">
           <div
-            className="fixed inset-0 bg-black bg-opacity-50"
+            className="fixed inset-0 bg-white bg-opacity-30 opacity-60"
             onClick={() => setShowSearchModal(false)}
           />
 
@@ -521,7 +539,7 @@ export default function Header() {
 
               <form onSubmit={handleSearch} className="space-y-4">
                 {/* Category Selector */}
-                <select
+                {/* <select
                   value={selectedCategory || "all"}
                   onChange={(e) => handleCategoryChange(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -537,7 +555,7 @@ export default function Header() {
                       ))}
                     </optgroup>
                   ))}
-                </select>
+                </select> */}
 
                 {/* Search Input */}
                 <div className="relative">
