@@ -395,15 +395,15 @@ export default function Header() {
                 onClick={() => setShowSearchModal(true)}
                 className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg"
               >
-                <Search size={20} />
+                <Search size={28} />
               </button>
 
               {/* Mobile Sell Button */}
               <Link
                 href="/products/new"
-                className="flex items-center gap-1 px-3 py-1.5 bg-[#F37A33] text-white rounded-lg text-sm font-medium"
+                className="flex items-center gap-1 px-3 py-2 bg-[#F37A33] text-white rounded-lg text-base font-medium"
               >
-                <Plus size={16} />
+                <Plus size={20} />
                 Sell
               </Link>
 
@@ -412,7 +412,7 @@ export default function Header() {
                 onClick={() => setShowMobileMenu(true)}
                 className="p-2 text-gray-700 hover:bg-gray-100 rounded-lg"
               >
-                <Menu size={24} />
+                <Menu size={28} />
               </button>
             </div>
           </div>
