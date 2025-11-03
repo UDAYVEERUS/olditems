@@ -1,7 +1,7 @@
 // app/robots.ts
 import { MetadataRoute } from 'next';
 
-const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.olditems.in';
+const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.olditems.ins';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -12,6 +12,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           '/api/',
           '/admin/',
+          '/_next/static/chunks/app/',
           '/dashboard/',
           '/my-products/',
         ],
