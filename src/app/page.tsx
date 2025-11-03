@@ -1,10 +1,11 @@
 'use client';
 
-// src/app/page.tsx
 import { useEffect, useState } from 'react';
 import { useSearch } from '@/context/SearchContext';
-import ProductCard from '@/components/ProductCard';
-import { Loader2 } from 'lucide-react';
+import ProductsGrid from '@/components/ProductsGrid';
+import Pagination from '@/components/Pagination';
+import EmptyState from '@/components/EmptyState';
+import LoadingSpinner from '@/components/LoadingSpinner';
 import toast from 'react-hot-toast';
 
 interface Seller {
@@ -28,14 +29,6 @@ interface Product {
   user?: Seller;
 }
 
-interface PaginationInfo {
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-  hasMore: boolean;
-}
-
 export default function HomePage() {
   const { searchQuery, selectedCategory } = useSearch();
   const [products, setProducts] = useState<Product[]>([]);
@@ -43,11 +36,13 @@ export default function HomePage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  // Reset to page 1 when search/category changes
   useEffect(() => {
-    setPage(1); // Reset to page 1 when search or category changes
+    setPage(1);
     fetchProducts(1);
   }, [searchQuery, selectedCategory]);
 
+  // Fetch products when page changes
   useEffect(() => {
     fetchProducts(page);
   }, [page]);
@@ -71,12 +66,10 @@ export default function HomePage() {
         throw new Error(data.error || 'Failed to fetch products');
       }
 
-      // Ensure products array exists and normalize each product
+      // Normalize products data
       const normalizedProducts = (data.products || []).map((product: any) => ({
         ...product,
-        // Ensure images is always an array
         images: Array.isArray(product.images) ? product.images : [],
-        // Normalize seller field - use seller if available, otherwise user
         seller: product.seller || product.user || null,
       }));
 
@@ -92,11 +85,7 @@ export default function HomePage() {
   };
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-[60vh]">
-        <Loader2 className="animate-spin text-blue-600" size={48} />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
@@ -111,46 +100,17 @@ export default function HomePage() {
         </p>
       </div>
 
-      {/* Products Grid or Empty State */}
+      {/* Products or Empty State */}
       {products.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-xl text-gray-600 mb-2">No products found</p>
-          <p className="text-gray-500">Try adjusting your search or filters</p>
-        </div>
+        <EmptyState />
       ) : (
         <>
-          {/* Products Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-            {products.map((product) => (
-              <ProductCard 
-                key={product.id} 
-                product={product}
-              />
-            ))}
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex justify-center items-center gap-4 mt-8">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
-              >
-                Previous
-              </button>
-              <span className="px-4 py-2 text-gray-700 font-medium">
-                Page {page} of {totalPages}
-              </span>
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 transition-colors"
-              >
-                Next
-              </button>
-            </div>
-          )}
+          <ProductsGrid products={products} />
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
         </>
       )}
     </div>
