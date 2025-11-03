@@ -115,7 +115,7 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[60vh]">
-        <Loader2 className="animate-spin text-blue-600" size={48} />
+        <Loader2 className="animate-spin text-[#E06B2D]" size={48} />
       </div>
     );
   }
@@ -134,7 +134,7 @@ export default function AdminDashboard() {
     <div className="max-w-7xl mx-auto px-4 py-6 md:py-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <ShieldCheck className="text-blue-600" size={32} />
+        <ShieldCheck className="text-[#E06B2D]" size={32} />
         <div>
           <h1 className="text-2xl md:text-3xl font-bold">Admin Dashboard</h1>
           <p className="text-gray-600">Manage users, products, and view statistics</p>
@@ -145,7 +145,7 @@ export default function AdminDashboard() {
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
           <div className="bg-white p-4 rounded-lg shadow-md">
-            <div className="flex items-center gap-2 text-blue-600 mb-1">
+            <div className="flex items-center gap-2 text-[#E06B2D] mb-1">
               <Users size={18} />
               <span className="text-sm">Total Users</span>
             </div>
@@ -200,7 +200,7 @@ export default function AdminDashboard() {
           onClick={() => setActiveTab('stats')}
           className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${
             activeTab === 'stats'
-              ? 'bg-blue-600 text-white'
+              ? 'bg-[#E06B2D] text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
         >
@@ -210,7 +210,7 @@ export default function AdminDashboard() {
           onClick={() => setActiveTab('users')}
           className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${
             activeTab === 'users'
-              ? 'bg-blue-600 text-white'
+              ? 'bg-[#E06B2D] text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
         >
@@ -220,7 +220,7 @@ export default function AdminDashboard() {
           onClick={() => setActiveTab('products')}
           className={`px-4 py-2 rounded-lg font-medium whitespace-nowrap ${
             activeTab === 'products'
-              ? 'bg-blue-600 text-white'
+              ? 'bg-[#E06B2D] text-white'
               : 'bg-white text-gray-700 hover:bg-gray-100'
           }`}
         >
@@ -323,7 +323,7 @@ export default function AdminDashboard() {
               </div>
               <div className="p-4">
                 <h3 className="font-semibold line-clamp-2 mb-2">{product.title}</h3>
-                <p className="text-lg font-bold text-blue-600 mb-2">₹{product.price.toLocaleString('en-IN')}</p>
+                <p className="text-lg font-bold text-[#E06B2D] mb-2">₹{product.price.toLocaleString('en-IN')}</p>
                 <p className="text-sm text-gray-600 mb-2">{product.category.name}</p>
                 <p className="text-xs text-gray-500 mb-2">By: {product.user.name}</p>
                 <div className="flex items-center gap-4 text-xs text-gray-600">

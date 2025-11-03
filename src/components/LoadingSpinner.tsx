@@ -11,7 +11,7 @@ export default function LoadingSpinner({
 }: LoadingSpinnerProps) {
   return (
     <div className={`flex justify-center items-center min-h-[60vh] ${className}`}>
-      <Loader2 className="animate-spin text-blue-600" size={size} />
+      <Loader2 className="animate-spin text-[#E06B2D]" size={size} />
     </div>
   );
 }

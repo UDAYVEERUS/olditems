@@ -149,7 +149,7 @@ export default function NewProductPage() {
   // if (checkingSubscription) {
   //   return (
   //     <div className="flex justify-center items-center min-h-[60vh]">
-  //       <Loader2 className="animate-spin text-blue-600" size={48} />
+  //       <Loader2 className="animate-spin text-[#E06B2D]" size={48} />
   //     </div>
   //   );
   // }
@@ -162,7 +162,7 @@ export default function NewProductPage() {
   //     <div className="max-w-2xl mx-auto px-4 py-12">
   //       <div className="bg-white rounded-lg shadow-md p-8 text-center">
   //         <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-  //           <Lock className="text-blue-600" size={32} />
+  //           <Lock className="text-[#E06B2D]" size={32} />
   //         </div>
   //         
   //         <h1 className="text-2xl font-bold mb-2">Subscription Required</h1>
@@ -194,7 +194,7 @@ export default function NewProductPage() {
   //
   //         <button
   //           onClick={() => router.push('/subscription')}
-  //           className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold text-lg"
+  //           className="w-full py-3 bg-[#E06B2D] text-white rounded-lg hover:bg-blue-700 font-semibold text-lg"
   //         >
   //           Subscribe Now - ₹10/month
   //         </button>
@@ -376,7 +376,7 @@ export default function NewProductPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
+            className="w-full py-3 bg-[#E06B2D] text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
           >
             {loading ? (
               <>
