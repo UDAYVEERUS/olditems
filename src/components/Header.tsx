@@ -240,8 +240,8 @@ export default function Header() {
                     style={{ minWidth: "100px", maxWidth: "100px" }}
                   >
                     <option value="all">All</option>
-                    {categories.map((cat) => (
-                      <>
+                    {categories.map((cat , index) => (
+                      <span key={index}>
                         {/* Parent category option */}
                         <option key={cat.id} value={cat.id}>
                           {cat.name}
@@ -252,7 +252,7 @@ export default function Header() {
                             &nbsp;&nbsp;{sub.name}
                           </option>
                         ))}
-                      </>
+                      </span>
                     ))}
                   </select>
 
