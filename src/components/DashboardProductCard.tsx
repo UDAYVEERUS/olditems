@@ -1,13 +1,20 @@
-'use client';
+"use client";
 
 // src/components/DashboardProductCard.tsx
 // Product card for seller dashboard with actions
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import { Eye, Phone, MoreVertical, CheckCircle, Trash2, Edit } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import {
+  Eye,
+  Phone,
+  MoreVertical,
+  CheckCircle,
+  Trash2,
+  Edit,
+} from "lucide-react";
+import toast from "react-hot-toast";
 
 interface Product {
   id: string;
@@ -25,7 +32,7 @@ interface Product {
   };
 }
 
-interface Props { 
+interface Props {
   product: Product;
   onUpdate: () => void;
 }
@@ -35,25 +42,30 @@ export default function DashboardProductCard({ product, onUpdate }: Props) {
   const [showMenu, setShowMenu] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const handleEdit = () => {
+    // Navigate to edit page
+    router.push(`/dashboard/products/${product.id}/edit`);
+  };
+
   const handleMarkAsSold = async () => {
-    if (!confirm('Mark this product as sold?')) return;
+    if (!confirm("Mark this product as sold?")) return;
 
     setLoading(true);
     try {
       const res = await fetch(`/api/products/${product.id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'SOLD' }),
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "SOLD" }),
       });
 
       if (res.ok) {
-        toast.success('Product marked as sold');
+        toast.success("Product marked as sold");
         onUpdate();
       } else {
-        toast.error('Failed to update status');
+        toast.error("Failed to update status");
       }
     } catch (error) {
-      toast.error('Something went wrong');
+      toast.error("Something went wrong");
     } finally {
       setLoading(false);
       setShowMenu(false);
@@ -64,19 +76,19 @@ export default function DashboardProductCard({ product, onUpdate }: Props) {
     setLoading(true);
     try {
       const res = await fetch(`/api/products/${product.id}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'ACTIVE' }),
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ACTIVE" }),
       });
 
       if (res.ok) {
-        toast.success('Product marked as active');
+        toast.success("Product marked as active");
         onUpdate();
       } else {
-        toast.error('Failed to update status');
+        toast.error("Failed to update status");
       }
     } catch (error) {
-      toast.error('Something went wrong');
+      toast.error("Something went wrong");
     } finally {
       setLoading(false);
       setShowMenu(false);
@@ -84,22 +96,27 @@ export default function DashboardProductCard({ product, onUpdate }: Props) {
   };
 
   const handleDelete = async () => {
-    if (!confirm('Are you sure you want to delete this product? This action cannot be undone.')) return;
+    if (
+      !confirm(
+        "Are you sure you want to delete this product? This action cannot be undone."
+      )
+    )
+      return;
 
     setLoading(true);
     try {
       const res = await fetch(`/api/products/${product.id}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
 
       if (res.ok) {
-        toast.success('Product deleted');
+        toast.success("Product deleted");
         onUpdate();
       } else {
-        toast.error('Failed to delete product');
+        toast.error("Failed to delete product");
       }
     } catch (error) {
-      toast.error('Something went wrong');
+      toast.error("Something went wrong");
     } finally {
       setLoading(false);
       setShowMenu(false);
@@ -108,11 +125,16 @@ export default function DashboardProductCard({ product, onUpdate }: Props) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'ACTIVE': return 'bg-green-100 text-green-700';
-      case 'SOLD': return 'bg-gray-100 text-gray-700';
-      case 'HIDDEN': return 'bg-yellow-100 text-yellow-700';
-      case 'ARCHIVED': return 'bg-red-100 text-red-700';
-      default: return 'bg-gray-100 text-gray-700';
+      case "ACTIVE":
+        return "bg-green-100 text-green-700";
+      case "SOLD":
+        return "bg-gray-100 text-gray-700";
+      case "HIDDEN":
+        return "bg-yellow-100 text-yellow-700";
+      case "ARCHIVED":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-700";
     }
   };
 
@@ -132,9 +154,11 @@ export default function DashboardProductCard({ product, onUpdate }: Props) {
             No Image
           </div>
         )}
-        
+
         {/* Status Badge */}
-        <div className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium ${getStatusColor(product.status)}`}>
+        <div
+          className={`absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium ${getStatusColor(product.status)}`}
+        >
           {product.status}
         </div>
 
@@ -151,7 +175,17 @@ export default function DashboardProductCard({ product, onUpdate }: Props) {
           {/* Dropdown Menu */}
           {showMenu && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 border z-10">
-              {product.status === 'ACTIVE' && (
+              <button
+                onClick={() =>
+                  router.push(`/dashboard/products/${product.id}/edit`)
+                }
+                className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 w-full text-left"
+              >
+                <Edit size={16} />
+                Edit Product
+              </button>
+
+              {product.status === "ACTIVE" && (
                 <button
                   onClick={handleMarkAsSold}
                   className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 w-full text-left"
@@ -160,8 +194,8 @@ export default function DashboardProductCard({ product, onUpdate }: Props) {
                   Mark as Sold
                 </button>
               )}
-              
-              {product.status === 'SOLD' && (
+
+              {product.status === "SOLD" && (
                 <button
                   onClick={handleMarkAsActive}
                   className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 w-full text-left"
@@ -190,7 +224,7 @@ export default function DashboardProductCard({ product, onUpdate }: Props) {
         </h3>
 
         <p className="text-2xl font-bold text-[#E06B2D] mb-2">
-          ₹{product.price.toLocaleString('en-IN')}
+          ₹{product.price.toLocaleString("en-IN")}
         </p>
 
         <p className="text-sm text-gray-600 mb-3">
