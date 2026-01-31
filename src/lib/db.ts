@@ -5,7 +5,7 @@ const MONGODB_URI = "mongodb://127.0.0.1:27017/olditems";
 import dns from "dns";
 dns.setDefaultResultOrder("ipv4first");
 if (!MONGODB_URI) {
-  throw new Error('❌ MONGODB_URI not found');
+  throw new Error('❌ MONGODB_URI not found'); 
 }
 
 interface MongooseCache {
