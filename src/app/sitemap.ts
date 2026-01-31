@@ -7,11 +7,22 @@ import { Category } from '@/models/Category';
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.olditems.in';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Skip database connection during build
+  if (process.env.NODE_ENV === 'production' && !process.env.MONGODB_URI) {
+    console.log('⚠️ Skipping sitemap generation during build (no MongoDB)');
+    return [
+      {
+        url: BASE_URL,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 1,
+      },
+    ];
+  }
+
   try {
-    // Connect to MongoDB
     await dbConnect();
 
-    // Static routes
     const staticRoutes: MetadataRoute.Sitemap = [
       {
         url: BASE_URL,
@@ -69,7 +80,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       },
     ];
 
-    // Get active products from MongoDB
     const activeProducts = await Product.find({ status: 'ACTIVE' })
       .select('_id updatedAt')
       .limit(10000)
@@ -82,14 +92,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
-    // Get all categories from MongoDB
     const allCategories = await Category.find()
       .select('_id slug parentId')
       .lean();
 
-    // Build category routes with hierarchy
     const categoryRoutes: MetadataRoute.Sitemap = allCategories.map((category) => {
-      // If it's a subcategory, find parent slug
       if (category.parentId) {
         const parent = allCategories.find((c) => c._id.toString() === category.parentId);
         return {
@@ -100,7 +107,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         };
       }
       
-      // Parent category
       return {
         url: `${BASE_URL}/category/${category.slug}`,
         lastModified: new Date(),
@@ -112,7 +118,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return [...staticRoutes, ...productRoutes, ...categoryRoutes];
   } catch (error) {
     console.error('❌ Sitemap generation error:', error);
-    // Return at least the homepage if database fails
     return [
       {
         url: BASE_URL,
@@ -124,5 +129,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 }
 
-// Revalidate sitemap every hour
+export const dynamic = 'force-dynamic';
 export const revalidate = 3600;
