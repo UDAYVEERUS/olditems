@@ -1,14 +1,14 @@
-// src/app/api/auth/login/route.ts
-// Login endpoint that sets the auth cookie
+export const runtime = "nodejs";
 
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { users } from '@/db/schema';
+import dbConnect from '@/lib/db';
+import { User } from '@/models/User';
 import { comparePassword, generateToken, setAuthCookie } from '@/lib/auth';
-import { eq, or } from 'drizzle-orm';
 
 export async function POST(request: Request) {
   try {
+    await dbConnect();
+
     const body = await request.json();
     const { identifier, password } = body;
 
@@ -20,16 +20,9 @@ export async function POST(request: Request) {
     }
 
     // Find user by email or phone
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(
-        or(
-          eq(users.email, identifier),
-          eq(users.phone, identifier)
-        )
-      )
-      .limit(1);
+    const user = await User.findOne({
+      $or: [{ email: identifier }, { phone: identifier }]
+    });
 
     if (!user) {
       return NextResponse.json(
@@ -49,25 +42,21 @@ export async function POST(request: Request) {
     }
 
     // Generate JWT token
-    const token = generateToken(user.id);
+    const token = generateToken(user._id.toString());
 
-    // Set the auth cookie - THIS IS THE KEY PART
+    // Set the auth cookie
     await setAuthCookie(token);
 
     // Return user data (without password)
     const userData = {
-      id: user.id,
+      id: user._id.toString(),
+      userId: user.userId,
       name: user.name,
       email: user.email,
       phone: user.phone,
       city: user.city,
       state: user.state,
       pincode: user.pincode,
-      // ==================== SUBSCRIPTION FIELDS (COMMENTED OUT) ====================
-      // subscriptionStatus: user.subscriptionStatus,
-      // subscriptionEndDate: user.subscriptionEndDate,
-      // freeListingsUsed: user.freeListingsUsed,
-      // ==================== END SUBSCRIPTION FIELDS ====================
     };
 
     return NextResponse.json({

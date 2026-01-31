@@ -1,24 +1,21 @@
-// src/app/api/products/[id]/phone-click/route.ts
-// Track phone number clicks for analytics
+export const runtime = "nodejs";
 
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { products } from '@/db/schema';
-import { eq, sql } from 'drizzle-orm';
+import dbConnect from '@/lib/db';
+import { Product } from '@/models/Product';
 
 export async function POST(
   request: Request,
-  { params }:{ params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Increment phone clicks counter
+    await dbConnect();
+
     const { id } = await params;
-    await db
-      .update(products)
-      .set({
-        phoneClicks: sql`${products.phoneClicks} + 1`,
-      })
-      .where(eq(products.id,id));
+    
+    await Product.findByIdAndUpdate(id, {
+      $inc: { phoneClicks: 1 }
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

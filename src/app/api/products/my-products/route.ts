@@ -1,14 +1,14 @@
-// src/app/api/products/my-products/route.ts
-// Get all products for logged-in user
-
+export const runtime = "nodejs";
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { products, categories } from '@/db/schema';
+import dbConnect from '@/lib/db';
+import { Product } from '@/models/Product';
+import { Category } from '@/models/Category';
 import { getCurrentUser } from '@/lib/auth';
-import { eq, desc } from 'drizzle-orm';
 
 export async function GET() {
   try {
+    await dbConnect();
+
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
@@ -19,37 +19,37 @@ export async function GET() {
     }
 
     // Get all products for this user
-    const userProducts = await db
-      .select({
-        id: products.id,
-        title: products.title,
-        description: products.description,
-        price: products.price,
-        images: products.images,
-        status: products.status,
-        views: products.views,
-        phoneClicks: products.phoneClicks,
-        city: products.city,
-        state: products.state,
-        createdAt: products.createdAt,
-        category: {
-          id: categories.id,
-          name: categories.name,
-        },
-      })
-      .from(products)
-      .leftJoin(categories, eq(products.categoryId, categories.id))
-.where(eq(products.userId, currentUser.id.toString()))
-      .orderBy(desc(products.createdAt));
+    const products = await Product.find({ userId: currentUser.userId })
+      .sort({ createdAt: -1 })
+      .lean();
 
-    // Parse images from JSON string
-    const productsWithImages = userProducts.map((p) => ({
-      ...p,
-      images: p.images ? JSON.parse(p.images) : [],
-    }));
+    // Fetch category details
+    const productsWithCategory = await Promise.all(
+      products.map(async (product) => {
+        const category = await Category.findById(product.categoryId).select('name').lean();
+
+        return {
+          id: product._id.toString(),
+          title: product.title,
+          description: product.description,
+          price: product.price,
+          images: product.images,
+          status: product.status,
+          views: product.views,
+          phoneClicks: product.phoneClicks,
+          city: product.city,
+          state: product.state,
+          createdAt: product.createdAt,
+          category: category ? {
+            id: category._id.toString(),
+            name: category.name,
+          } : null,
+        };
+      })
+    );
 
     return NextResponse.json({
-      products: productsWithImages,
+      products: productsWithCategory,
     });
   } catch (error) {
     console.error('Get my products error:', error);

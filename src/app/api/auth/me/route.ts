@@ -1,42 +1,39 @@
-// src/app/api/auth/me/route.ts
+export const runtime = "nodejs";
+
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { users } from '@/db/schema';
+import dbConnect from '@/lib/db';
+import { User } from '@/models/User';
 import { getCurrentUser } from '@/lib/auth';
-import { eq } from 'drizzle-orm';
 
 export async function GET() {
   try {
+    await dbConnect();
+    
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // ✅ Use the correct field based on your token payload
-    // If your JWT payload is { id }, use currentUser.id
-    // If your JWT payload is { userId }, use currentUser.userId
-    const [user] = await db
-      .select({
-        id: users.id,
-        userId: users.userId,
-        name: users.name,
-        email: users.email,
-        phone: users.phone,
-        city: users.city,
-        state: users.state,
-        pincode: users.pincode,
-        createdAt: users.createdAt,
-      })
-      .from(users)
-      .where(eq(users.id, currentUser.id)) // ✅ FIXED
-      .limit(1);
+    const user = await User.findById(currentUser.userId).select('-password');
 
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ user });
+    return NextResponse.json({
+      user: {
+        id: user._id.toString(),
+        userId: user.userId,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        city: user.city,
+        state: user.state,
+        pincode: user.pincode,
+        createdAt: user.createdAt,
+      }
+    });
   } catch (error) {
     console.error('Get user error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

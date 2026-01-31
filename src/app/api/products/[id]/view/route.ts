@@ -1,24 +1,20 @@
-// src/app/api/products/[id]/view/route.ts
-// Track product views for analytics
-
+export const runtime = "nodejs";
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { products } from '@/db/schema';
-import { eq, sql } from 'drizzle-orm';
+import dbConnect from '@/lib/db';
+import { Product } from '@/models/Product';
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Increment views counter
+    await dbConnect();
+
     const { id } = await params;
-    await db
-      .update(products)
-      .set({
-        views: sql`${products.views} + 1`,
-      })
-      .where(eq(products.id, id));
+    
+    await Product.findByIdAndUpdate(id, {
+      $inc: { views: 1 }
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

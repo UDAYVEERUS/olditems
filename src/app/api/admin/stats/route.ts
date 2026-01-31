@@ -1,16 +1,17 @@
-// src/app/api/admin/stats/route.ts
-// Get admin dashboard statistics (SUBSCRIPTION STATS COMMENTED OUT)
+export const runtime = "nodejs";
 
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { users, products } from '@/db/schema'; // Removed transactions import
+import dbConnect from '@/lib/db';
+import { User } from '@/models/User';
+import { Product } from '@/models/Product';
 import { getCurrentUser } from '@/lib/auth';
-import { count, eq } from 'drizzle-orm'; // Removed: sum, and, gte
 
 const ADMIN_EMAILS = ['udayveerus348566@gmail.com'];
 
 export async function GET() {
   try {
+    await dbConnect();
+
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
@@ -21,11 +22,7 @@ export async function GET() {
     }
 
     // Get user email to check admin
-    const [user] = await db
-      .select({ email: users.email })
-      .from(users)
-      .where(eq(users.id, currentUser.id))
-      .limit(1);
+    const user = await User.findById(currentUser.userId).select('email');
 
     if (!user || !ADMIN_EMAILS.includes(user.email)) {
       return NextResponse.json(
@@ -35,60 +32,19 @@ export async function GET() {
     }
 
     // Get total users
-    const [{ value: totalUsers }] = await db
-      .select({ value: count() })
-      .from(users);
-
-    // ==================== SUBSCRIPTION STATS (COMMENTED OUT) ====================
-    // Get active subscribers
-    // const [{ value: activeSubscribers }] = await db
-    //   .select({ value: count() })
-    //   .from(users)
-    //   .where(eq(users.subscriptionStatus, 'ACTIVE'));
-    // ==================== END SUBSCRIPTION STATS ====================
+    const totalUsers = await User.countDocuments();
 
     // Get total products
-    const [{ value: totalProducts }] = await db
-      .select({ value: count() })
-      .from(products);
+    const totalProducts = await Product.countDocuments();
 
     // Get active products
-    const [{ value: activeProducts }] = await db
-      .select({ value: count() })
-      .from(products)
-      .where(eq(products.status, 'ACTIVE'));
-
-    // ==================== REVENUE STATS (COMMENTED OUT) ====================
-    // Get total revenue (all successful transactions)
-    // const [revenueData] = await db
-    //   .select({ value: sum(transactions.amount) })
-    //   .from(transactions)
-    //   .where(eq(transactions.status, 'SUCCESS'));
-    // const totalRevenue = revenueData?.value || 0;
-
-    // Get this month's revenue
-    // const now = new Date();
-    // const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    // const [monthRevenueData] = await db
-    //   .select({ value: sum(transactions.amount) })
-    //   .from(transactions)
-    //   .where(
-    //     and(
-    //       eq(transactions.status, 'SUCCESS'),
-    //       gte(transactions.createdAt, firstDayOfMonth)
-    //     )
-    //   );
-    // const monthlyRevenue = monthRevenueData?.value || 0;
-    // ==================== END REVENUE STATS ====================
+    const activeProducts = await Product.countDocuments({ status: 'ACTIVE' });
 
     return NextResponse.json({
       stats: {
         totalUsers,
-        // activeSubscribers, // COMMENTED OUT
         totalProducts,
         activeProducts,
-        // totalRevenue, // COMMENTED OUT
-        // monthlyRevenue, // COMMENTED OUT
       },
     });
   } catch (error) {

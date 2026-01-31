@@ -8,7 +8,7 @@
     ],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": false, // ← Change this to false
+    "strict": false,
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
@@ -33,10 +33,10 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts",
+    "src/types/**/*.d.ts",
     ".next\\dev/types/**/*.ts",
     ".next\\dev/types/**/*.ts"
-, "tailwind.config.js"  ],
+  ],
   "exclude": [
     "node_modules"
   ]
