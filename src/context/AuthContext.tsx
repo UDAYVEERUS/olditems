@@ -1,3 +1,4 @@
+// src/context/AuthContext.tsx
 "use client";
 import {
   createContext,
@@ -8,16 +9,11 @@ import {
 } from "react";
 
 interface User {
-  id: number; // database primary key
+  id: string;
   userId: string;
   name: string;
   email: string;
   phone: string;
-  // ==================== SUBSCRIPTION FIELDS (COMMENTED OUT) ====================
-  // subscriptionStatus: string;
-  // subscriptionEndDate?: string;
-  // freeListingsUsed: number;
-  // ==================== END SUBSCRIPTION FIELDS ====================
   city?: string;
 }
 
@@ -34,7 +30,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Fetch current user on mount
   useEffect(() => {
     fetchCurrentUser();
   }, []);
@@ -69,7 +64,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Custom hook to use auth context
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {

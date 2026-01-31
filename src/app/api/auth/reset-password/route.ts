@@ -1,18 +1,17 @@
-// src/app/api/auth/reset-password/route.ts
-// Reset password with token
+export const runtime = "nodejs";
 
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { users } from '@/db/schema';
-import { eq, and, gt } from 'drizzle-orm';
+import dbConnect from '@/lib/db';
+import { User } from '@/models/User';
 import { hashPassword } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
+    await dbConnect();
+
     const body = await request.json();
     const { token, password } = body;
 
-    // Validation
     if (!token || !password) {
       return NextResponse.json(
         { error: 'Token and password are required' },
@@ -28,16 +27,10 @@ export async function POST(request: Request) {
     }
 
     // Find user with valid token
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(
-        and(
-          eq(users.resetToken, token),
-          gt(users.resetTokenExpiry, new Date())
-        )
-      )
-      .limit(1);
+    const user = await User.findOne({
+      resetToken: token,
+      resetTokenExpiry: { $gt: new Date() }
+    });
 
     if (!user) {
       return NextResponse.json(
@@ -50,14 +43,10 @@ export async function POST(request: Request) {
     const hashedPassword = await hashPassword(password);
 
     // Update password and clear reset token
-    await db
-      .update(users)
-      .set({
-        password: hashedPassword,
-        resetToken: null,
-        resetTokenExpiry: null,
-      })
-      .where(eq(users.id, user.id));
+    user.password = hashedPassword;
+    user.resetToken = undefined;
+    user.resetTokenExpiry = undefined;
+    await user.save();
 
     return NextResponse.json({
       success: true,

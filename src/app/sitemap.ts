@@ -1,14 +1,28 @@
 // app/sitemap.ts
 import { MetadataRoute } from 'next';
-import { db } from '@/db';
-import { products, categories } from '@/db/schema';
-import { eq, isNull } from 'drizzle-orm';
+import dbConnect from '@/lib/db';
+import { Product } from '@/models/Product';
+import { Category } from '@/models/Category';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.olditems.in';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // Skip database connection during build
+  if (process.env.NODE_ENV === 'production' && !process.env.MONGODB_URI) {
+    console.log('⚠️ Skipping sitemap generation during build (no MongoDB)');
+    return [
+      {
+        url: BASE_URL,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 1,
+      },
+    ];
+  }
+
   try {
-    // Static routes
+    await dbConnect();
+
     const staticRoutes: MetadataRoute.Sitemap = [
       {
         url: BASE_URL,
@@ -49,54 +63,42 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       {
         url: `${BASE_URL}/privacy-policy`,
         lastModified: new Date(),
-        changeFrequency: 'daily',
-        priority: 0.9,
+        changeFrequency: 'monthly',
+        priority: 0.5,
       },
       {
         url: `${BASE_URL}/terms-conditions`,
         lastModified: new Date(),
-        changeFrequency: 'daily',
-        priority: 0.9,
+        changeFrequency: 'monthly',
+        priority: 0.5,
       },
       {
         url: `${BASE_URL}/shipping`,
         lastModified: new Date(),
-        changeFrequency: 'daily',
-        priority: 0.9,
+        changeFrequency: 'monthly',
+        priority: 0.5,
       },
     ];
 
-    // Get active products directly from DB
-    const activeProducts = await db
-      .select({
-        id: products.id,
-        updatedAt: products.updatedAt,
-      })
-      .from(products)
-      .where(eq(products.status, 'ACTIVE'))
-      .limit(10000); // Adjust limit as needed
+    const activeProducts = await Product.find({ status: 'ACTIVE' })
+      .select('_id updatedAt')
+      .limit(10000)
+      .lean();
 
     const productRoutes: MetadataRoute.Sitemap = activeProducts.map((product) => ({
-      url: `${BASE_URL}/products/${product.id}`,
+      url: `${BASE_URL}/products/${product._id}`,
       lastModified: new Date(product.updatedAt),
       changeFrequency: 'weekly',
       priority: 0.7,
     }));
 
-    // Get all categories
-    const allCategories = await db
-      .select({
-        id: categories.id,
-        slug: categories.slug,
-        parentId: categories.parentId,
-      })
-      .from(categories);
+    const allCategories = await Category.find()
+      .select('_id slug parentId')
+      .lean();
 
-    // Build category routes with hierarchy
     const categoryRoutes: MetadataRoute.Sitemap = allCategories.map((category) => {
-      // If it's a subcategory, find parent slug
       if (category.parentId) {
-        const parent = allCategories.find((c) => c.id === category.parentId);
+        const parent = allCategories.find((c) => c._id.toString() === category.parentId);
         return {
           url: `${BASE_URL}/category/${parent?.slug}/${category.slug}`,
           lastModified: new Date(),
@@ -105,7 +107,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         };
       }
       
-      // Parent category
       return {
         url: `${BASE_URL}/category/${category.slug}`,
         lastModified: new Date(),
@@ -116,7 +117,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     return [...staticRoutes, ...productRoutes, ...categoryRoutes];
   } catch (error) {
-    console.error('Sitemap generation error:', error);
+    console.error('❌ Sitemap generation error:', error);
     return [
       {
         url: BASE_URL,
@@ -128,5 +129,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 }
 
-// Revalidate sitemap every hour
+export const dynamic = 'force-dynamic';
 export const revalidate = 3600;

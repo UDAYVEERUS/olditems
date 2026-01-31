@@ -1,14 +1,14 @@
-// src/app/api/products/create/route.ts
-// Create product - FREE LISTING (subscription checks commented out)
-
+export const runtime = "nodejs";
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { products, users } from '@/db/schema';
+import dbConnect from '@/lib/db';
+import { Product } from '@/models/Product';
+import { User } from '@/models/User';
 import { getCurrentUser } from '@/lib/auth';
-import { eq } from 'drizzle-orm';
 
 export async function POST(request: Request) {
   try {
+    await dbConnect();
+
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
@@ -44,11 +44,7 @@ export async function POST(request: Request) {
     }
 
     // Get user
-    const [user] = await db
-      .select()
-      .from(users)
-.where(eq(users.id, currentUser.id))
-      .limit(1);
+    const user = await User.findById(currentUser.userId);
 
     if (!user) {
       return NextResponse.json(
@@ -57,38 +53,14 @@ export async function POST(request: Request) {
       );
     }
 
-    // ==================== SUBSCRIPTION CHECKS (COMMENTED OUT) ====================
-    // Check if user has active subscription
-    // const now = new Date();
-    // const hasActiveSubscription = 
-    //   user.subscriptionStatus === 'ACTIVE' && 
-    //   user.subscriptionEndDate && 
-    //   new Date(user.subscriptionEndDate) > now;
-
-    // Must have active subscription to list
-    // if (!hasActiveSubscription) {
-    //   return NextResponse.json(
-    //     { 
-    //       error: 'Please subscribe to list products. Pay ₹10/month to start listing.', 
-    //       needsPayment: true 
-    //     },
-    //     { status: 403 }
-    //   );
-    // }
-    // ==================== END SUBSCRIPTION CHECKS ====================
-
-    // Generate product ID
-    const productId = `prod_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-
-    // Create product - NOW FREE FOR ALL USERS
-    await db.insert(products).values({
-      id: productId,
+    // Create product
+    const newProduct = await Product.create({
       title,
       description,
       price: parseFloat(price),
       categoryId,
-      userId: user.id.toString(),
-      images: JSON.stringify(images),
+      userId: user._id.toString(),
+      images,
       city,
       state,
       pincode,
@@ -97,17 +69,15 @@ export async function POST(request: Request) {
       status: 'ACTIVE',
     });
 
-    // Fetch created product
-    const [newProduct] = await db
-      .select()
-      .from(products)
-      .where(eq(products.id, productId));
-
     return NextResponse.json({
       success: true,
       product: {
-        ...newProduct,
-        images: JSON.parse(newProduct.images),
+        id: newProduct._id.toString(),
+        title: newProduct.title,
+        description: newProduct.description,
+        price: newProduct.price,
+        images: newProduct.images,
+        status: newProduct.status,
       },
       message: 'Product listed successfully!',
     });

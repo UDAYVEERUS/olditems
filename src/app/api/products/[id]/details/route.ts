@@ -1,49 +1,21 @@
-// src/app/api/products/[id]/details/route.ts
-// Get single product details with user and category info
+export const runtime = "nodejs";
 
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { products, users, categories } from '@/db/schema';
-import { eq } from 'drizzle-orm';
+import dbConnect from '@/lib/db';
+import { Product } from '@/models/Product';
+import { User } from '@/models/User';
+import { Category } from '@/models/Category';
 
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Get product with user and category data
+    await dbConnect();
+
     const { id } = await params;
-    const [product] = await db
-      .select({
-        id: products.id,
-        title: products.title,
-        description: products.description,
-        price: products.price,
-        images: products.images,
-        status: products.status,
-        views: products.views,
-        phoneClicks: products.phoneClicks,
-        city: products.city,
-        state: products.state,
-        pincode: products.pincode,
-        createdAt: products.createdAt,
-        user: {
-          id: users.id,
-          name: users.name,
-          phone: users.phone,
-          city: users.city,
-          state: users.state,
-        },
-        category: {
-          id: categories.id,
-          name: categories.name,
-        },
-      })
-      .from(products)
-      .leftJoin(users, eq(products.userId, users.id))
-      .leftJoin(categories, eq(products.categoryId, categories.id))
-      .where(eq(products.id, id))
-      .limit(1);
+    
+    const product = await Product.findById(id).lean();
 
     if (!product) {
       return NextResponse.json(
@@ -52,13 +24,37 @@ export async function GET(
       );
     }
 
-    // Parse images from JSON string
-    const productWithImages = {
-      ...product,
-      images: product.images ? JSON.parse(product.images) : [],
+    // Fetch user and category
+    const user = await User.findById(product.userId).select('name phone city state').lean();
+    const category = await Category.findById(product.categoryId).select('name').lean();
+
+    const productWithDetails = {
+      id: product._id.toString(),
+      title: product.title,
+      description: product.description,
+      price: product.price,
+      images: product.images,
+      status: product.status,
+      views: product.views,
+      phoneClicks: product.phoneClicks,
+      city: product.city,
+      state: product.state,
+      pincode: product.pincode,
+      createdAt: product.createdAt,
+      user: user ? {
+        id: user._id.toString(),
+        name: user.name,
+        phone: user.phone,
+        city: user.city,
+        state: user.state,
+      } : null,
+      category: category ? {
+        id: category._id.toString(),
+        name: category.name,
+      } : null,
     };
 
-    return NextResponse.json({ product: productWithImages });
+    return NextResponse.json({ product: productWithDetails });
   } catch (error) {
     console.error('Get product error:', error);
     return NextResponse.json(

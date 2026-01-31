@@ -1,30 +1,30 @@
-// src/app/api/categories/route.ts
-// Get all categories with Drizzle ORM
+export const runtime = "nodejs";
 
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { categories } from '@/db/schema';
-import { eq, isNull } from 'drizzle-orm';
+import dbConnect from '@/lib/db';
+import { Category } from '@/models/Category';
 
 export async function GET() {
   try {
+    await dbConnect();
+
     // Get all parent categories
-    const parentCategories = await db
-      .select()
-      .from(categories)
-      .where(isNull(categories.parentId));
+    const parentCategories = await Category.find({ parentId: null });
 
     // Get subcategories for each parent
     const categoriesWithSubs = await Promise.all(
       parentCategories.map(async (parent) => {
-        const subCategories = await db
-          .select()
-          .from(categories)
-          .where(eq(categories.parentId, parent.id));
+        const subCategories = await Category.find({ parentId: parent._id.toString() });
 
         return {
-          ...parent,
-          subCategories,
+          id: parent._id.toString(),
+          name: parent.name,
+          slug: parent.slug,
+          subCategories: subCategories.map(sub => ({
+            id: sub._id.toString(),
+            name: sub.name,
+            slug: sub.slug,
+          })),
         };
       })
     );
@@ -39,9 +39,10 @@ export async function GET() {
   }
 }
 
-// POST route to create categories
 export async function POST(request: Request) {
   try {
+    await dbConnect();
+
     const body = await request.json();
     const { name, parentId } = body;
 
@@ -52,23 +53,22 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate slug and ID
+    // Generate slug
     const slug = name.toLowerCase().replace(/\s+/g, '-');
-    const categoryId = `cat_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
-    await db.insert(categories).values({
-      id: categoryId,
+    const category = await Category.create({
       name,
       slug,
       parentId: parentId || null,
     });
 
-    const [category] = await db
-      .select()
-      .from(categories)
-      .where(eq(categories.id, categoryId));
-
-    return NextResponse.json({ category });
+    return NextResponse.json({
+      category: {
+        id: category._id.toString(),
+        name: category.name,
+        slug: category.slug,
+      }
+    });
   } catch (error) {
     console.error('Create category error:', error);
     return NextResponse.json(

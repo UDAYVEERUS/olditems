@@ -1,16 +1,16 @@
-// src/app/api/products/route.ts
-// Get products with filters using Drizzle ORM (MySQL compatible)
-
+export const runtime = "nodejs";
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { products, users, categories } from '@/db/schema';
-import { eq, and, gte, lte, like, or, desc, asc, count, sql } from 'drizzle-orm';
+import dbConnect from '@/lib/db';
+import { Product } from '@/models/Product';
+import { User } from '@/models/User';
+import { Category } from '@/models/Category';
 
 export async function GET(request: Request) {
   try {
+    await dbConnect();
+
     const { searchParams } = new URL(request.url);
     
-    // Get query parameters
     const search = searchParams.get('search') || '';
     const categoryId = searchParams.get('categoryId');
     const category = searchParams.get('category');
@@ -19,130 +19,105 @@ export async function GET(request: Request) {
     const state = searchParams.get('state');
     const minPrice = searchParams.get('minPrice');
     const maxPrice = searchParams.get('maxPrice');
-    const sortBy = searchParams.get('sortBy') || 'latest'; // latest, price-low, price-high
+    const sortBy = searchParams.get('sortBy') || 'latest';
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
-    const offset = (page - 1) * limit;
+    const skip = (page - 1) * limit;
 
-    // Build where conditions - ALWAYS initialize with ACTIVE status check
-    const conditions: any[] = [eq(products.status, 'ACTIVE')];
+    // Build query
+    const query: any = { status: 'ACTIVE' };
 
-    // Search in title and description (case-insensitive using LOWER())
+    // Search
     if (search && search.trim() !== '') {
-      const searchLower = search.toLowerCase();
-      conditions.push(
-        or(
-          sql`LOWER(${products.title}) LIKE ${`%${searchLower}%`}`,
-          sql`LOWER(${products.description}) LIKE ${`%${searchLower}%`}`
-        )
-      );
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
     }
 
-    // Filter by category (support both categoryId and category name)
+    // Category filter
     if (categoryId) {
-      conditions.push(eq(products.categoryId, categoryId));
+      query.categoryId = categoryId;
     } else if (category) {
-      conditions.push(eq(products.categoryId, category));
+      query.categoryId = category;
     }
 
-    // Filter by location (case-insensitive using LOWER())
+    // Location filter
     if (city && city !== '') {
-      const cityLower = city.toLowerCase();
-      conditions.push(sql`LOWER(${products.city}) LIKE ${`%${cityLower}%`}`);
+      query.city = { $regex: city, $options: 'i' };
     }
     
     if (state && state !== '') {
-      const stateLower = state.toLowerCase();
-      conditions.push(sql`LOWER(${products.state}) LIKE ${`%${stateLower}%`}`);
+      query.state = { $regex: state, $options: 'i' };
     }
 
-    // Filter by price range
+    // Price range filter
     if (minPrice) {
-      conditions.push(gte(products.price, parseFloat(minPrice)));
+      query.price = { ...query.price, $gte: parseFloat(minPrice) };
     }
     if (maxPrice) {
-      conditions.push(lte(products.price, parseFloat(maxPrice)));
+      query.price = { ...query.price, $lte: parseFloat(maxPrice) };
     }
 
-    // Build order by clause based on sortBy parameter
-    let orderByClause;
-    switch (sortBy) {
-      case 'price-low':
-        orderByClause = asc(products.price);
-        break;
-      case 'price-high':
-        orderByClause = desc(products.price);
-        break;
-      case 'latest':
-      default:
-        orderByClause = desc(products.createdAt);
-        break;
+    // Sort
+    let sort: any = { createdAt: -1 }; // default: latest
+    if (sortBy === 'price-low') {
+      sort = { price: 1 };
+    } else if (sortBy === 'price-high') {
+      sort = { price: -1 };
     }
 
-    // Build WHERE clause - will always have at least ACTIVE status filter
-    const whereClause = and(...conditions);
-    
-    const productsList = await db
-      .select({
-        id: products.id,
-        title: products.title,
-        description: products.description,
-        price: products.price,
-        images: products.images,
-        city: products.city,
-        state: products.state,
-        pincode: products.pincode,
-        status: products.status,
-        views: products.views,
-        createdAt: products.createdAt,
-        updatedAt: products.updatedAt,
-        // User/Seller info
-        seller: {
-          id: users.id,
-          name: users.name,
-          email: users.email,
-          phone: users.phone,
-          city: users.city,
-          state: users.state,
-        },
-        // Category info
-        category: {
-          id: categories.id,
-          name: categories.name,
-          slug: categories.slug,
-        },
-      })
-      .from(products)
-      .leftJoin(users, eq(products.userId, users.id))
-      .leftJoin(categories, eq(products.categoryId, categories.id))
-      .where(whereClause)
-      .orderBy(orderByClause)
+    // Get products
+    const products = await Product.find(query)
+      .sort(sort)
+      .skip(skip)
       .limit(limit)
-      .offset(offset);
+      .lean();
 
-    // console.log(`Found ${productsList.length} products for page ${page}`);
+    // Get total count
+    const total = await Product.countDocuments(query);
 
-    // Parse images from JSON string if needed
-    const productsWithImages = productsList.map((p) => ({
-      ...p,
-      images: typeof p.images === 'string' ? JSON.parse(p.images) : p.images,
-      // Make sure seller exists before returning
-      seller: p.seller?.id ? p.seller : null,
-      category: p.category?.id ? p.category : null,
-    }));
+    // Fetch user and category details for each product
+    const productsWithDetails = await Promise.all(
+      products.map(async (product) => {
+        const user = await User.findById(product.userId).select('name email phone city state').lean();
+        const cat = await Category.findById(product.categoryId).select('name slug').lean();
 
-    // Get total count for pagination
-    const [{ value: total }] = await db
-      .select({ value: count() })
-      .from(products)
-      .where(whereClause);
+        return {
+          id: product._id.toString(),
+          title: product.title,
+          description: product.description,
+          price: product.price,
+          images: product.images,
+          city: product.city,
+          state: product.state,
+          pincode: product.pincode,
+          status: product.status,
+          views: product.views,
+          createdAt: product.createdAt,
+          updatedAt: product.updatedAt,
+          seller: user ? {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            phone: user.phone,
+            city: user.city,
+            state: user.state,
+          } : null,
+          category: cat ? {
+            id: cat._id.toString(),
+            name: cat.name,
+            slug: cat.slug,
+          } : null,
+        };
+      })
+    );
 
-    // Calculate pagination info
     const totalPages = Math.ceil(total / limit);
     const hasMore = page < totalPages;
 
     return NextResponse.json({
-      products: productsWithImages,
+      products: productsWithDetails,
       pagination: {
         total,
         page,
@@ -151,12 +126,12 @@ export async function GET(request: Request) {
         hasMore,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Get products error:', error);
     return NextResponse.json(
       { 
         error: 'Failed to fetch products', 
-        details: error instanceof Error ? error.message : 'Unknown error' 
+        details: error.message 
       },
       { status: 500 }
     );

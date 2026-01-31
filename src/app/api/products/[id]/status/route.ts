@@ -1,17 +1,17 @@
-// src/app/api/products/[id]/status/route.ts
-// Update product status (mark as sold, active, etc)
+export const runtime = "nodejs";
 
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { products } from '@/db/schema';
+import dbConnect from '@/lib/db';
+import { Product } from '@/models/Product';
 import { getCurrentUser } from '@/lib/auth';
-import { eq, and } from 'drizzle-orm';
 
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    await dbConnect();
+
     const { id } = await params;
     const currentUser = await getCurrentUser();
 
@@ -33,16 +33,10 @@ export async function PATCH(
     }
 
     // Verify product belongs to user
-    const [product] = await db
-      .select()
-      .from(products)
-      .where(
-        and(
-          eq(products.id, id),
-eq(products.userId, currentUser.id.toString())
-        )
-      )
-      .limit(1);
+    const product = await Product.findOne({
+      _id: id,
+      userId: currentUser.userId
+    });
 
     if (!product) {
       return NextResponse.json(
@@ -52,10 +46,8 @@ eq(products.userId, currentUser.id.toString())
     }
 
     // Update status
-    await db
-      .update(products)
-      .set({ status })
-      .where(eq(products.id, id));
+    product.status = status;
+    await product.save();
 
     return NextResponse.json({
       success: true,

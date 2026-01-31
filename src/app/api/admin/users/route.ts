@@ -1,16 +1,16 @@
-// src/app/api/admin/users/route.ts
-// Get all users for admin (SUBSCRIPTION FIELDS COMMENTED OUT IN RESPONSE)
+export const runtime = "nodejs";
 
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { users } from '@/db/schema';
+import dbConnect from '@/lib/db';
+import { User } from '@/models/User';
 import { getCurrentUser } from '@/lib/auth';
-import { eq, desc } from 'drizzle-orm';
 
 const ADMIN_EMAILS = ['udayveerus348566@gmail.com'];
 
-export async function GET(request: Request) {
+export async function GET() {
   try {
+    await dbConnect();
+
     const currentUser = await getCurrentUser();
 
     if (!currentUser) {
@@ -21,11 +21,7 @@ export async function GET(request: Request) {
     }
 
     // Check admin
-    const [user] = await db
-      .select({ email: users.email })
-      .from(users)
-      .where(eq(users.id, currentUser.id))
-      .limit(1);
+    const user = await User.findById(currentUser.userId).select('email');
 
     if (!user || !ADMIN_EMAILS.includes(user.email)) {
       return NextResponse.json(
@@ -35,24 +31,23 @@ export async function GET(request: Request) {
     }
 
     // Get all users
-    const allUsers = await db
-      .select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        phone: users.phone,
-        city: users.city,
-        state: users.state,
-        // ==================== SUBSCRIPTION FIELDS (COMMENTED OUT) ====================
-        // subscriptionStatus: users.subscriptionStatus,
-        // subscriptionEndDate: users.subscriptionEndDate,
-        // ==================== END SUBSCRIPTION FIELDS ====================
-        createdAt: users.createdAt,
-      })
-      .from(users)
-      .orderBy(desc(users.createdAt));
+    const allUsers = await User.find()
+      .select('userId name email phone city state createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
 
-    return NextResponse.json({ users: allUsers });
+    const formattedUsers = allUsers.map(u => ({
+      id: u._id.toString(),
+      userId: u.userId,
+      name: u.name,
+      email: u.email,
+      phone: u.phone,
+      city: u.city,
+      state: u.state,
+      createdAt: u.createdAt,
+    }));
+
+    return NextResponse.json({ users: formattedUsers });
   } catch (error) {
     console.error('Get users error:', error);
     return NextResponse.json(

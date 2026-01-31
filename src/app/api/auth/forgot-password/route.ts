@@ -1,19 +1,17 @@
-// src/app/api/auth/forgot-password/route.ts
-// Request password reset link
+export const runtime = "nodejs";
 
 import { NextResponse } from 'next/server';
-import { db } from '@/db';
-import { users } from '@/db/schema';
-import { eq } from 'drizzle-orm';
-// import { sendPasswordResetEmail } from '@/lib/resend';
+import dbConnect from '@/lib/db';
+import { User } from '@/models/User';
 import crypto from 'crypto';
 
 export async function POST(request: Request) {
   try {
+    await dbConnect();
+
     const body = await request.json();
     const { email } = body;
 
-    // Validation
     if (!email) {
       return NextResponse.json(
         { error: 'Email is required' },
@@ -22,11 +20,7 @@ export async function POST(request: Request) {
     }
 
     // Find user by email
-    const [user] = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
+    const user = await User.findOne({ email });
 
     // Always return success (security - don't reveal if email exists)
     if (!user) {
@@ -41,15 +35,11 @@ export async function POST(request: Request) {
     const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
     // Save token to database
-    await db
-      .update(users)
-      .set({
-        resetToken,
-        resetTokenExpiry,
-      })
-      .where(eq(users.id, user.id));
+    user.resetToken = resetToken;
+    user.resetTokenExpiry = resetTokenExpiry;
+    await user.save();
 
-    // Send reset email
+    // TODO: Send reset email
     // await sendPasswordResetEmail(user.email, user.name, resetToken);
 
     return NextResponse.json({
