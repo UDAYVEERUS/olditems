@@ -4,6 +4,7 @@ import mongoose, { Document, Model } from 'mongoose';
 export interface ICategory extends Document {
   name: string;
   slug: string;
+  subcategories?: string[]; // Add this if you want subcategories
   parentId?: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -18,8 +19,11 @@ const CategorySchema = new mongoose.Schema<ICategory>({
   slug: {
     type: String,
     required: true,
-    unique: true,  // ✅ unique creates index automatically
+    unique: true,
   },
+  subcategories: [{ 
+    type: String 
+  }], // Add this field
   parentId: {
     type: String,
     default: null,
@@ -28,9 +32,6 @@ const CategorySchema = new mongoose.Schema<ICategory>({
   timestamps: true,
 });
 
-// ❌ REMOVE this duplicate index - unique: true already creates it
-// CategorySchema.index({ slug: 1 });
-
-CategorySchema.index({ parentId: 1 });  // ✅ Keep this one - it's not duplicate
+CategorySchema.index({ parentId: 1 });
 
 export const Category: Model<ICategory> = mongoose.models.Category || mongoose.model<ICategory>('Category', CategorySchema);

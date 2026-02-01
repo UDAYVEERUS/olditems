@@ -1,90 +1,119 @@
 // scripts/seed-categories.ts
-import dbConnect from '../src/lib/db';
-import { Category } from '../src/models/Category';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
 
-const categoryData = [
+dotenv.config();
+
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+  console.error('❌ MONGODB_URI not found');
+  process.exit(1);
+}
+
+// Use your existing Category model
+interface ICategory {
+  name: string;
+  slug: string;
+  subcategories?: string[];
+  parentId?: string | null;
+}
+
+const categorySchema = new mongoose.Schema<ICategory>({
+  name: { type: String, required: true, unique: true },
+  slug: { type: String, required: true, unique: true },
+  subcategories: [{ type: String }],
+  parentId: { type: String, default: null },
+}, {
+  timestamps: true,
+});
+
+const Category = mongoose.models.Category || mongoose.model<ICategory>('Category', categorySchema);
+
+const categoryData: ICategory[] = [
   {
     name: 'Electronics',
+    slug: 'electronics',
     subcategories: ['Mobile Phones', 'Laptops', 'Cameras', 'TVs', 'Audio', 'Accessories'],
+    parentId: null,
   },
   {
     name: 'Vehicles',
+    slug: 'vehicles',
     subcategories: ['Cars', 'Bikes', 'Scooters', 'Bicycles', 'Spare Parts'],
+    parentId: null,
   },
   {
     name: 'Furniture',
+    slug: 'furniture',
     subcategories: ['Sofa', 'Beds', 'Tables', 'Chairs', 'Wardrobes', 'Home Decor'],
+    parentId: null,
   },
   {
     name: 'Fashion',
+    slug: 'fashion',
     subcategories: ['Men Clothing', 'Women Clothing', 'Kids Clothing', 'Shoes', 'Accessories'],
-  },
-  {
-    name: 'Home Appliances',
-    subcategories: ['Refrigerators', 'Washing Machines', 'ACs', 'Kitchen Appliances'],
+    parentId: null,
   },
   {
     name: 'Books & Sports',
-    subcategories: ['Books', 'Sports Equipment', 'Gym Equipment', 'Musical Instruments'],
+    slug: 'books-sports',
+    subcategories: ['Books', 'Gym Equipment', 'Sports Equipment', 'Musical Instruments'],
+    parentId: null,
   },
   {
-    name: 'Real Estate',
-    subcategories: ['Houses for Sale', 'Houses for Rent', 'Commercial', 'Plots'],
+    name: 'Home & Garden',
+    slug: 'home-garden',
+    subcategories: ['Kitchen Appliances', 'Garden Tools', 'Home Improvement', 'Bathroom'],
+    parentId: null,
+  },
+  {
+    name: 'Pets',
+    slug: 'pets',
+    subcategories: ['Pet Food', 'Pet Accessories', 'Pet Care', 'Aquariums'],
+    parentId: null,
   },
   {
     name: 'Services',
-    subcategories: ['Tutors', 'Home Repair', 'Cleaning', 'Photography', 'Event Planning'],
+    slug: 'services',
+    subcategories: ['Education', 'Health', 'Repair', 'Moving', 'Cleaning'],
+    parentId: null,
   },
 ];
 
-async function main() {
-  await dbConnect();
-  
-  console.log('Seeding categories...');
+async function seedCategories() {
+  try {
+    console.log('📡 Connecting to MongoDB...');
+    await mongoose.connect(MONGODB_URI);
+    console.log('✅ Connected to MongoDB:', mongoose.connection.db.databaseName);
 
-  for (const cat of categoryData) {
-    const slug = cat.name.toLowerCase().replace(/\s+/g, '-');
+    // Drop the collection to clear all data and indexes
+    console.log('🗑️  Dropping categories collection...');
+    await mongoose.connection.db.dropCollection('categories').catch(() => {
+      console.log('   Collection does not exist, skipping drop');
+    });
 
-    // Check if parent exists
-    let parent = await Category.findOne({ slug });
+    console.log('📦 Inserting new categories...');
+    const result = await Category.insertMany(categoryData);
+    console.log(`✅ Successfully seeded ${result.length} categories\n`);
 
-    if (parent) {
-      console.log(`✓ Parent exists: ${parent.name}`);
-    } else {
-      // Create parent category
-      parent = await Category.create({
-        name: cat.name,
-        slug,
-        parentId: null,
-      });
-
-      console.log(`✓ Created parent: ${parent.name}`);
-    }
-
-    // Create subcategories
-    for (const subName of cat.subcategories) {
-      const subSlug = subName.toLowerCase().replace(/\s+/g, '-');
-
-      const existingSub = await Category.findOne({ slug: subSlug });
-
-      if (!existingSub) {
-        await Category.create({
-          name: subName,
-          slug: subSlug,
-          parentId: parent._id.toString(),
-        });
-        console.log(`  ✓ Created sub: ${subName}`);
-      } else {
-        console.log(`  ✓ Sub exists: ${subName}`);
+    result.forEach((cat, index) => {
+      console.log(`${index + 1}. 📁 ${cat.name} (/${cat.slug})`);
+      if (cat.subcategories && cat.subcategories.length > 0) {
+        console.log(`   └─ ${cat.subcategories.join(', ')}\n`);
       }
-    }
-  }
+    });
 
-  console.log('✅ Seeding complete!');
-  process.exit(0);
+    await mongoose.connection.close();
+    console.log('✅ Database connection closed');
+    process.exit(0);
+  } catch (error) {
+    console.error('❌ Seeding error:', error);
+    if (mongoose.connection.readyState === 1) {
+      await mongoose.connection.close();
+    }
+    process.exit(1);
+  }
 }
 
-main().catch((e) => {
-  console.error('Error seeding:', e);
-  process.exit(1);
-});
+seedCategories();

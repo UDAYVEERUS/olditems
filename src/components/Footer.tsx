@@ -123,7 +123,7 @@ export default function Footer() {
 
         {/* Bottom Footer */}
         <div className="flex flex-col md:flex-row justify-between items-center text-sm text-white">
-          <p>© {currentYear} Marketplace. All rights reserved.</p>
+          <p>© {currentYear} Olditems. All rights reserved. Developed By <a href="https://uday-portfolio-khaki.vercel.app/">Udayveer Singh</a></p>
           <div className="flex gap-4 mt-4 md:mt-0">
             <Link href="/privacy-policy" className="hover:text-blue-400 transition-colors">
               Privacy Policy
